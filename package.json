@@ -1,0 +1,50 @@
+{
+  "name": "betting-method-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for calculating various betting methods (Monte Carlo, Martingale, etc.)",
+  "author": "yusakuvol",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yusakuvol/betting-method-mcp.git"
+  },
+  "homepage": "https://github.com/yusakuvol/betting-method-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/yusakuvol/betting-method-mcp/issues"
+  },
+  "type": "module",
+  "main": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "bin": {
+    "betting-method-mcp": "./build/index.js"
+  },
+  "files": [
+    "build"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build",
+    "watch": "tsc --watch",
+    "dev": "node --enable-source-maps build/index.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "betting",
+    "monte-carlo",
+    "martingale",
+    "betting-strategy",
+    "gambling",
+    "money-management"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
