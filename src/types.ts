@@ -37,3 +37,14 @@ export interface InitSessionParams {
 export interface RecordResultParams {
   result: BetResult;
 }
+
+/**
+ * Martingale method specific state
+ */
+export interface MartingaleState extends BettingMethodState {
+  baseUnit: number;
+  currentStreak: number;
+  maxBet: number;
+  maxLossStreak: number;
+  reachedLimit: boolean;
+}
