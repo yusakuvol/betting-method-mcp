@@ -42,18 +42,10 @@ MCP (Model Context Protocol) サーバーで、各種ベッティング方法の
 
 **⚠️ 重要:** マーチンゲール法は連敗時に賭け金が指数関数的に増加します。必ず上限を設定し、リスク管理を徹底してください。
 
-## インストール
-
-### npm経由（公開後）
+## セットアップ
 
 ```bash
-npm install -g betting-method-mcp
-```
-
-### ローカル開発
-
-```bash
-git clone https://github.com/yourusername/betting-method-mcp.git
+git clone https://github.com/yusakuvol/betting-method-mcp.git
 cd betting-method-mcp
 npm install
 npm run build
@@ -64,20 +56,6 @@ npm run build
 ### Claude Desktopでの設定
 
 `claude_desktop_config.json` を編集:
-
-**グローバルインストールの場合:**
-
-```json
-{
-  "mcpServers": {
-    "betting-method": {
-      "command": "betting-method-mcp"
-    }
-  }
-}
-```
-
-**ローカル開発の場合:**
 
 ```json
 {
