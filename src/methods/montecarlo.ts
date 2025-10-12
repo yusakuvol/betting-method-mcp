@@ -95,7 +95,10 @@ export class MonteCarloMethod {
    * Get current state
    */
   getState(): MonteCarloState {
-    return { ...this.state };
+    return {
+      ...this.state,
+      sequence: [...this.state.sequence], // Deep copy of array
+    };
   }
 
   /**
