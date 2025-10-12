@@ -128,7 +128,7 @@ betting-method-mcp/
 │   └── methods/
 │       ├── montecarlo.ts     # モンテカルロ法の実装
 │       └── martingale.ts     # マーチンゲール法の実装
-├── docs/                     # 各方法の詳細仕様
+├── .dccs/                    # 各方法の詳細仕様
 │   ├── architecture.md       # アーキテクチャ設計
 │   └── martingale.md         # マーチンゲール法の詳細
 ├── build/                    # コンパイル後のファイル
