@@ -1,48 +1,48 @@
 # Betting Method MCP Server
 
-MCP (Model Context Protocol) サーバーで、各種ベッティング方法の計算を提供します。Claude DesktopやMCP対応アプリケーションから利用できます。
+An MCP (Model Context Protocol) server that provides calculations for various betting methods. Can be used with Claude Desktop and other MCP-compatible applications.
 
-現在、**モンテカルロ法**と**マーチンゲール法**をサポートしています。今後、パーレー法、ダランベール法など他のベッティング方法も追加予定です。
+Currently supports **Monte Carlo Method** and **Martingale Method**. Additional betting methods such as Paroli, D'Alembert, and others are planned for future releases.
 
-## 機能
+## Features
 
-### モンテカルロ法 (Monte Carlo Method)
+### Monte Carlo Method
 
-モンテカルロ法は、数列を使って賭け金を管理する戦略です。
+The Monte Carlo method is a betting strategy that manages bet amounts using a number sequence.
 
-**仕組み:**
-1. 初期数列（例: `[1, 2, 3]`）を設定
-2. 賭け金 = (最初の数 + 最後の数) × 基本単位
-3. **勝った場合**: 数列の最初と最後の数を削除
-4. **負けた場合**: 負けた賭け金（単位数）を数列の最後に追加
-5. 数列が空または1つになったらセッション完了
+**How it works:**
+1. Set an initial sequence (e.g., `[1, 2, 3]`)
+2. Bet amount = (first number + last number) × base unit
+3. **On win**: Remove first and last numbers from the sequence
+4. **On loss**: Add the lost bet amount (in units) to the end of the sequence
+5. Session completes when the sequence has 0 or 1 numbers
 
-**提供ツール:**
-- `montecarlo_init` - 新しいセッションを初期化
-- `montecarlo_record` - 勝敗を記録して次の賭け金を取得
-- `montecarlo_status` - 現在の状態（数列、賭け金、収支）を確認
-- `montecarlo_reset` - セッションをリセット
+**Available tools:**
+- `montecarlo_init` - Initialize a new session
+- `montecarlo_record` - Record a win/loss and get the next bet amount
+- `montecarlo_status` - Check current state (sequence, bet amount, profit/loss)
+- `montecarlo_reset` - Reset the session
 
-### マーチンゲール法 (Martingale Method)
+### Martingale Method
 
-マーチンゲール法は、負けるたびに賭け金を倍にする戦略です。勝てば初期賭け金分の利益が得られますが、連敗時のリスクが高い方法です。
+The Martingale method is a strategy that doubles the bet amount after each loss. When you win, you recover all previous losses plus gain a profit equal to the initial bet amount, but this method carries high risk during losing streaks.
 
-**仕組み:**
-1. 初期賭け金を設定
-2. 賭け金 = 初期賭け金 × 2^(連敗回数)
-3. **勝った場合**: 賭け金を初期値にリセット
-4. **負けた場合**: 賭け金を2倍にする
-5. 最大賭け金または最大連敗数に達したらセッション終了
+**How it works:**
+1. Set an initial bet amount
+2. Bet amount = initial bet × 2^(consecutive losses)
+3. **On win**: Reset bet amount to initial value
+4. **On loss**: Double the bet amount
+5. Session ends when maximum bet or maximum loss streak is reached
 
-**提供ツール:**
-- `martingale_init` - 新しいセッションを初期化（基本賭け金、最大賭け金、最大連敗数を設定）
-- `martingale_record` - 勝敗を記録して次の賭け金を取得
-- `martingale_status` - 現在の状態（賭け金、連敗数、収支）を確認
-- `martingale_reset` - セッションをリセット
+**Available tools:**
+- `martingale_init` - Initialize a new session (set base bet, max bet, max loss streak)
+- `martingale_record` - Record a win/loss and get the next bet amount
+- `martingale_status` - Check current state (bet amount, loss streak, profit/loss)
+- `martingale_reset` - Reset the session
 
-**⚠️ 重要:** マーチンゲール法は連敗時に賭け金が指数関数的に増加します。必ず上限を設定し、リスク管理を徹底してください。
+**⚠️ Important:** The Martingale method causes bet amounts to increase exponentially during losing streaks. Always set limits and practice strict risk management.
 
-## セットアップ
+## Setup
 
 ```bash
 git clone https://github.com/yusakuvol/betting-method-mcp.git
@@ -51,11 +51,11 @@ npm install
 npm run build
 ```
 
-## 使用方法
+## Usage
 
-### Claude Desktopでの設定
+### Claude Desktop Configuration
 
-`claude_desktop_config.json` を編集:
+Edit `claude_desktop_config.json`:
 
 ```json
 {
@@ -68,88 +68,88 @@ npm run build
 }
 ```
 
-### 使用例
+### Usage Examples
 
-Claude Desktopで以下のように質問できます:
+You can ask Claude Desktop questions like these:
 
-#### モンテカルロ法
+#### Monte Carlo Method
 ```
-モンテカルロ法で基本単位10でセッションを開始して
-```
-
-```
-勝ちを記録して次の賭け金を教えて
+Start a Monte Carlo session with base unit 10
 ```
 
 ```
-現在の状態を確認して
-```
-
-#### マーチンゲール法
-```
-マーチンゲール法で基本賭け金10、最大賭け金1000、最大連敗数7でセッションを開始して
+Record a win and tell me the next bet amount
 ```
 
 ```
-負けを記録して
+Check the current status
+```
+
+#### Martingale Method
+```
+Start a Martingale session with base bet 10, max bet 1000, and max loss streak 7
 ```
 
 ```
-マーチンゲール法の状態を確認して
+Record a loss
 ```
 
-## 開発
+```
+Check the Martingale status
+```
 
-### ビルド
+## Development
+
+### Build
 
 ```bash
 npm run build
 ```
 
-### 開発モード（watchモード）
+### Development Mode (watch mode)
 
 ```bash
 npm run watch
 ```
 
-### ローカルテスト
+### Local Testing
 
 ```bash
 npm run dev
 ```
 
-## プロジェクト構造
+## Project Structure
 
 ```
 betting-method-mcp/
 ├── src/
-│   ├── index.ts              # MCPサーバーエントリーポイント
-│   ├── types.ts              # 共通型定義
+│   ├── index.ts              # MCP server entry point
+│   ├── types.ts              # Common type definitions
 │   └── methods/
-│       ├── montecarlo.ts     # モンテカルロ法の実装
-│       └── martingale.ts     # マーチンゲール法の実装
-├── .dccs/                    # 各方法の詳細仕様
-│   ├── architecture.md       # アーキテクチャ設計
-│   └── martingale.md         # マーチンゲール法の詳細
-├── build/                    # コンパイル後のファイル
+│       ├── montecarlo.ts     # Monte Carlo method implementation
+│       └── martingale.ts     # Martingale method implementation
+├── .dccs/                    # Detailed specifications for each method (Japanese)
+│   ├── architecture.md       # Architecture design
+│   └── martingale.md         # Martingale method details
+├── build/                    # Compiled files
 ├── package.json
 ├── tsconfig.json
 └── README.md
 ```
 
-## 将来の拡張予定
+## Future Enhancements
 
-以下のベッティング方法の追加を予定しています:
+The following betting methods are planned for addition:
 
-- **パーレー法** (Paroli) - 勝ったら賭け金を倍にする（逆マーチンゲール）
-- **ダランベール法** (D'Alembert) - 負けたら+1、勝ったら-1の緩やかな増減
-- **ラブシェール法** (Labouchere) - より柔軟な数列ベース戦略
-- **フィボナッチ法** (Fibonacci) - フィボナッチ数列を使った賭け金管理
+- **Paroli System** - Double bet on wins (reverse Martingale)
+- **D'Alembert System** - Gradual increase/decrease (+1 on loss, -1 on win)
+- **Labouchere System** - More flexible sequence-based strategy
+- **Fibonacci System** - Bet management using Fibonacci sequence
 
-## ライセンス
+## License
 
 MIT
 
-## 注意事項
+## Disclaimer
 
-このツールは教育・研究目的で提供されています。実際の賭博での使用は自己責任で行ってください。ベッティング戦略は必ずしも利益を保証するものではありません。
+This tool is provided for educational and research purposes. Use in actual gambling is at your own risk. Betting strategies do not guarantee profits.
