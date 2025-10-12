@@ -118,20 +118,70 @@ npm run watch
 npm run dev
 ```
 
+### Testing
+
+This project uses Vitest for testing.
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with UI
+npm run test:ui
+
+# Run tests with coverage
+npm run test:coverage
+```
+
+### Claude Code Custom Command
+
+This project includes a custom command for automatically implementing new betting methods based on GitHub issues.
+
+**Usage:**
+```
+/implement <issue_number>
+```
+
+**Example:**
+```
+/implement 1
+```
+
+This will:
+1. Fetch the issue details from GitHub
+2. Generate the method implementation (`src/methods/{method}.ts`)
+3. Add the State interface to `src/types.ts`
+4. Register MCP tools in `src/index.ts`
+5. Create comprehensive tests (`src/methods/__tests__/{method}.test.ts`)
+6. Build and run tests
+
+The command reads the issue specification and automatically generates all necessary code with proper error handling, type safety, and test coverage.
+
 ## Project Structure
 
 ```
 betting-method-mcp/
 ├── src/
-│   ├── index.ts              # MCP server entry point
-│   ├── types.ts              # Common type definitions
+│   ├── index.ts                    # MCP server entry point
+│   ├── types.ts                    # Common type definitions
 │   └── methods/
-│       ├── montecarlo.ts     # Monte Carlo method implementation
-│       └── martingale.ts     # Martingale method implementation
-├── .dccs/                    # Detailed specifications for each method (Japanese)
-│   ├── architecture.md       # Architecture design
-│   └── martingale.md         # Martingale method details
-├── build/                    # Compiled files
+│       ├── __tests__/              # Vitest test files
+│       │   ├── montecarlo.test.ts
+│       │   └── martingale.test.ts
+│       ├── montecarlo.ts           # Monte Carlo method implementation
+│       └── martingale.ts           # Martingale method implementation
+├── .claude/                        # Claude Code configuration
+│   ├── commands/
+│   │   └── implement.md            # Custom command for auto-implementation
+│   └── settings.local.json         # Local settings
+├── .dccs/                          # Detailed specifications for each method (Japanese)
+│   ├── architecture.md             # Architecture design
+│   └── martingale.md               # Martingale method details
+├── build/                          # Compiled files
+├── vitest.config.ts                # Vitest configuration
 ├── package.json
 ├── tsconfig.json
 └── README.md
