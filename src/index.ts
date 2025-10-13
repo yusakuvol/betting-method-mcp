@@ -3,12 +3,14 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
+import { FibonacciMethod } from "./methods/fibonacci.js";
 import { MartingaleMethod } from "./methods/martingale.js";
 import { MonteCarloMethod } from "./methods/montecarlo.js";
 
 // Initialize method instances
 const monteCarlo = new MonteCarloMethod();
 const martingale = new MartingaleMethod();
+const fibonacci = new FibonacciMethod();
 
 // Create MCP server
 const server = new Server(
@@ -129,6 +131,59 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: "martingale_reset",
         description: "Reset the current Martingale session to initial state",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
+        name: "fibonacci_init",
+        description:
+          "Initialize a new Fibonacci betting session with base unit and optional max sequence index",
+        inputSchema: {
+          type: "object",
+          properties: {
+            baseUnit: {
+              type: "number",
+              description: "The base unit amount for betting (e.g., 1, 10, 100)",
+              minimum: 0.01,
+            },
+            maxIndex: {
+              type: "number",
+              description: "Maximum sequence index before session ends (optional, default: 29)",
+              minimum: 0,
+            },
+          },
+          required: ["baseUnit"],
+        },
+      },
+      {
+        name: "fibonacci_record",
+        description: "Record a bet result (win or loss) and get the next bet amount",
+        inputSchema: {
+          type: "object",
+          properties: {
+            result: {
+              type: "string",
+              enum: ["win", "loss"],
+              description: "The result of the bet",
+            },
+          },
+          required: ["result"],
+        },
+      },
+      {
+        name: "fibonacci_status",
+        description:
+          "Get the current Fibonacci session status including current index, bet, and total profit",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
+        name: "fibonacci_reset",
+        description: "Reset the current Fibonacci session to initial state",
         inputSchema: {
           type: "object",
           properties: {},
@@ -333,6 +388,108 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 {
                   message: "Session reset to initial state",
                   baseUnit: state.baseUnit,
+                  currentBet: state.currentBet,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "fibonacci_init": {
+        const { baseUnit, maxIndex } = args as {
+          baseUnit: number;
+          maxIndex?: number;
+        };
+        fibonacci.initSession(baseUnit, maxIndex);
+        const state = fibonacci.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: "Fibonacci session initialized",
+                  baseUnit: state.baseUnit,
+                  currentIndex: state.currentIndex,
+                  currentBet: state.currentBet,
+                  maxIndex: state.maxIndex,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "fibonacci_record": {
+        const { result } = args as { result: "win" | "loss" };
+        fibonacci.recordResult(result);
+        const state = fibonacci.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: `Recorded ${result}`,
+                  currentIndex: state.currentIndex,
+                  currentBet: state.currentBet,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                  reachedLimit: state.reachedLimit,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "fibonacci_status": {
+        const state = fibonacci.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  baseUnit: state.baseUnit,
+                  currentIndex: state.currentIndex,
+                  currentBet: state.currentBet,
+                  maxIndex: state.maxIndex,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                  reachedLimit: state.reachedLimit,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "fibonacci_reset": {
+        fibonacci.reset();
+        const state = fibonacci.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: "Session reset to initial state",
+                  baseUnit: state.baseUnit,
+                  currentIndex: state.currentIndex,
                   currentBet: state.currentBet,
                   totalProfit: state.totalProfit,
                   sessionActive: state.sessionActive,
