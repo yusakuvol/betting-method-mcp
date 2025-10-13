@@ -12,14 +12,25 @@ args:
 
 ## 実装手順
 
-1. **Issue情報の取得**
+**重要**: 全てのCI項目(lint, format, build, test)が通過するまで実装を続けてください。エラーが発生した場合は自動的に修正を試行してください。
+
+1. **実装プランの作成**
+   - 実装開始時刻を記録
+   - `docs/plans/{method}-{YYYYMMDD-HHMMSS}.md` に実装プランを記録
+   - プランには以下を含める:
+     - Issue番号とタイトル
+     - 実装するメソッドの概要
+     - 実装予定のファイル一覧
+     - 実装手順のチェックリスト
+
+2. **Issue情報の取得**
    - `gh issue view {{issue_number}} --json title,body` でissue詳細を取得
    - タイトルとbodyから以下の情報を抽出:
      - メソッド名（例: dalembert, paroli, fibonacci, etc.）
      - State定義（TypeScript interface）
      - アルゴリズムの詳細
 
-2. **ファイルの自動生成**
+3. **ファイルの自動生成**
 
    以下のファイルを順番に生成してください:
 
@@ -65,15 +76,50 @@ args:
    - issueの内容を元に詳細な仕様書を作成
    - 使用例、注意点、リスクなどを記載
 
-3. **ビルドとテスト**
-   - `npm run build` でビルド
-   - `npm test` でテスト実行
-   - エラーがあれば修正
+3. **CI チェックの実行（必須）**
 
-4. **実装結果の報告**
+   以下の全てのCI項目が通過するまで実装・修正を繰り返してください:
+
+   ### a. Lint チェック
+   ```bash
+   npm run lint
+   ```
+   - エラーがある場合は `npm run lint:fix` で自動修正を試みる
+   - 自動修正できない場合は手動で修正
+
+   ### b. Format チェック
+   ```bash
+   npm run format:check
+   ```
+   - エラーがある場合は `npm run format` で自動修正
+
+   ### c. ビルド
+   ```bash
+   npm run build
+   ```
+   - TypeScriptコンパイルエラーがある場合は修正
+   - 型エラー、構文エラーを全て解消
+
+   ### d. テスト
+   ```bash
+   npm test
+   ```
+   - 全てのテストがPASSするまで修正
+   - 新規追加したテストと既存のテストの両方が通過すること
+
+   **重要**: 上記4項目全てが通過するまで次のステップに進まないでください。
+
+4. **実装プランの更新**
+   - `docs/plans/{method}-{YYYYMMDD-HHMMSS}.md` にCI実行結果を記録
+   - 各CI項目の結果（✅ PASS / ❌ FAIL）
+   - 発生したエラーと解決方法
+   - 実装完了時刻と所要時間
+
+5. **実装結果の報告**
    - 作成されたファイル一覧を表示
-   - テスト結果を表示
+   - 全CI項目の通過を確認
    - 実装の要約を提示
+   - 実装プランのパスを表示
 
 ## 注意事項
 
@@ -87,10 +133,28 @@ args:
 
 例: `/implement 1` を実行した場合（Issue #1がダランベール法の場合）:
 
-1. Issue #1の情報を取得
-2. `src/types.ts` に `DAlembertState` を追加
-3. `src/methods/dalembert.ts` を作成
-4. `src/index.ts` に4つのツール（dalembert_init, dalembert_record, dalembert_status, dalembert_reset）を登録
-5. `src/methods/__tests__/dalembert.test.ts` を作成
-6. ビルドとテスト実行
-7. 結果を報告
+1. 実装プラン作成: `docs/plans/dalembert-20250113-143022.md`
+2. Issue #1の情報を取得
+3. `src/types.ts` に `DAlembertState` を追加
+4. `src/methods/dalembert.ts` を作成
+5. `src/index.ts` に4つのツール（dalembert_init, dalembert_record, dalembert_status, dalembert_reset）を登録
+6. `src/methods/__tests__/dalembert.test.ts` を作成
+7. CI チェック実行:
+   - ✅ `npm run lint` → PASS
+   - ✅ `npm run format:check` → PASS
+   - ✅ `npm run build` → PASS
+   - ✅ `npm test` → PASS (全テスト通過)
+8. 実装プラン更新: CI結果と所要時間を記録
+9. 結果を報告
+
+**CI項目が失敗した場合の例**:
+- ❌ `npm run lint` → FAIL
+  - `npm run lint:fix` で自動修正
+  - 再度 `npm run lint` を実行
+  - ✅ PASS
+- ❌ `npm test` → FAIL (1 test failed)
+  - テストコードまたは実装を修正
+  - 再度 `npm test` を実行
+  - ✅ PASS
+
+全てのCI項目が通過するまでこのプロセスを繰り返します。
