@@ -1,15 +1,15 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { MonteCarloMethod } from '../montecarlo.js';
+import { describe, it, expect, beforeEach } from "vitest";
+import { MonteCarloMethod } from "../montecarlo.js";
 
-describe('MonteCarloMethod', () => {
+describe("MonteCarloMethod", () => {
   let monteCarlo: MonteCarloMethod;
 
   beforeEach(() => {
     monteCarlo = new MonteCarloMethod();
   });
 
-  describe('initSession', () => {
-    it('should initialize with default sequence [1, 2, 3]', () => {
+  describe("initSession", () => {
+    it("should initialize with default sequence [1, 2, 3]", () => {
       monteCarlo.initSession(10);
       const state = monteCarlo.getState();
 
@@ -20,7 +20,7 @@ describe('MonteCarloMethod', () => {
       expect(state.sessionActive).toBe(true);
     });
 
-    it('should calculate correct initial bet', () => {
+    it("should calculate correct initial bet", () => {
       monteCarlo.initSession(5);
       const state = monteCarlo.getState();
 
@@ -28,22 +28,22 @@ describe('MonteCarloMethod', () => {
     });
   });
 
-  describe('recordResult - win', () => {
+  describe("recordResult - win", () => {
     beforeEach(() => {
       monteCarlo.initSession(10);
     });
 
-    it('should remove first and last numbers on win', () => {
-      monteCarlo.recordResult('win');
+    it("should remove first and last numbers on win", () => {
+      monteCarlo.recordResult("win");
       const state = monteCarlo.getState();
 
       expect(state.sequence).toEqual([2]);
       expect(state.totalProfit).toBe(40); // Previous bet was 40
     });
 
-    it('should complete session when sequence has 1 element and win', () => {
-      monteCarlo.recordResult('win'); // [2]
-      monteCarlo.recordResult('win'); // []
+    it("should complete session when sequence has 1 element and win", () => {
+      monteCarlo.recordResult("win"); // [2]
+      monteCarlo.recordResult("win"); // []
       const state = monteCarlo.getState();
 
       expect(state.sequence).toEqual([]);
@@ -51,38 +51,38 @@ describe('MonteCarloMethod', () => {
       expect(state.currentBet).toBe(0);
     });
 
-    it('should update profit correctly on consecutive wins', () => {
-      monteCarlo.recordResult('win'); // +40, sequence: [2]
-      monteCarlo.recordResult('win'); // +20, sequence: []
+    it("should update profit correctly on consecutive wins", () => {
+      monteCarlo.recordResult("win"); // +40, sequence: [2]
+      monteCarlo.recordResult("win"); // +20, sequence: []
       const state = monteCarlo.getState();
 
       expect(state.totalProfit).toBe(60); // 40 + 20
     });
   });
 
-  describe('recordResult - loss', () => {
+  describe("recordResult - loss", () => {
     beforeEach(() => {
       monteCarlo.initSession(10);
     });
 
-    it('should add lost units to end of sequence on loss', () => {
-      monteCarlo.recordResult('loss');
+    it("should add lost units to end of sequence on loss", () => {
+      monteCarlo.recordResult("loss");
       const state = monteCarlo.getState();
 
       expect(state.sequence).toEqual([1, 2, 3, 4]); // Lost 4 units (40 / 10)
       expect(state.totalProfit).toBe(-40);
     });
 
-    it('should calculate next bet correctly after loss', () => {
-      monteCarlo.recordResult('loss');
+    it("should calculate next bet correctly after loss", () => {
+      monteCarlo.recordResult("loss");
       const state = monteCarlo.getState();
 
       expect(state.currentBet).toBe(50); // (1 + 4) * 10
     });
 
-    it('should handle consecutive losses', () => {
-      monteCarlo.recordResult('loss'); // [1, 2, 3, 4], bet: 50, profit: -40
-      monteCarlo.recordResult('loss'); // [1, 2, 3, 4, 5], bet: 60, profit: -90
+    it("should handle consecutive losses", () => {
+      monteCarlo.recordResult("loss"); // [1, 2, 3, 4], bet: 50, profit: -40
+      monteCarlo.recordResult("loss"); // [1, 2, 3, 4, 5], bet: 60, profit: -90
       const state = monteCarlo.getState();
 
       expect(state.sequence).toEqual([1, 2, 3, 4, 5]);
@@ -91,15 +91,15 @@ describe('MonteCarloMethod', () => {
     });
   });
 
-  describe('recordResult - mixed results', () => {
+  describe("recordResult - mixed results", () => {
     beforeEach(() => {
       monteCarlo.initSession(10);
     });
 
-    it('should handle win-loss-win pattern', () => {
-      monteCarlo.recordResult('win'); // +40, [2], bet: 20
-      monteCarlo.recordResult('loss'); // -20, [2, 2], bet: 40
-      monteCarlo.recordResult('win'); // +40, [], bet: 0
+    it("should handle win-loss-win pattern", () => {
+      monteCarlo.recordResult("win"); // +40, [2], bet: 20
+      monteCarlo.recordResult("loss"); // -20, [2, 2], bet: 40
+      monteCarlo.recordResult("win"); // +40, [], bet: 0
       const state = monteCarlo.getState();
 
       expect(state.totalProfit).toBe(60); // 40 - 20 + 40
@@ -107,8 +107,8 @@ describe('MonteCarloMethod', () => {
     });
   });
 
-  describe('getState', () => {
-    it('should return a copy of state', () => {
+  describe("getState", () => {
+    it("should return a copy of state", () => {
       monteCarlo.initSession(10);
       const state1 = monteCarlo.getState();
       const state2 = monteCarlo.getState();
@@ -117,7 +117,7 @@ describe('MonteCarloMethod', () => {
       expect(state1).not.toBe(state2); // Different objects
     });
 
-    it('should not allow external modification of state', () => {
+    it("should not allow external modification of state", () => {
       monteCarlo.initSession(10);
       const state = monteCarlo.getState();
       state.sequence.push(999);
@@ -127,11 +127,11 @@ describe('MonteCarloMethod', () => {
     });
   });
 
-  describe('reset', () => {
-    it('should reset to initial session state', () => {
+  describe("reset", () => {
+    it("should reset to initial session state", () => {
       monteCarlo.initSession(10);
-      monteCarlo.recordResult('win');
-      monteCarlo.recordResult('loss');
+      monteCarlo.recordResult("win");
+      monteCarlo.recordResult("loss");
 
       monteCarlo.reset();
       const state = monteCarlo.getState();
@@ -144,28 +144,28 @@ describe('MonteCarloMethod', () => {
     });
   });
 
-  describe('error handling', () => {
-    it('should throw error when recording result without active session', () => {
+  describe("error handling", () => {
+    it("should throw error when recording result without active session", () => {
       expect(() => {
-        monteCarlo.recordResult('win');
-      }).toThrow('No active session');
+        monteCarlo.recordResult("win");
+      }).toThrow("No active session");
     });
 
-    it('should throw error when recording after session is completed', () => {
+    it("should throw error when recording after session is completed", () => {
       monteCarlo.initSession(10);
-      monteCarlo.recordResult('win'); // [2]
-      monteCarlo.recordResult('win'); // [] - session complete
+      monteCarlo.recordResult("win"); // [2]
+      monteCarlo.recordResult("win"); // [] - session complete
 
       expect(() => {
-        monteCarlo.recordResult('win');
-      }).toThrow('No active session');
+        monteCarlo.recordResult("win");
+      }).toThrow("No active session");
     });
   });
 
-  describe('edge cases - sequence length scenarios', () => {
-    it('should handle single element sequence correctly', () => {
+  describe("edge cases - sequence length scenarios", () => {
+    it("should handle single element sequence correctly", () => {
       monteCarlo.initSession(10);
-      monteCarlo.recordResult('win'); // [2] - single element
+      monteCarlo.recordResult("win"); // [2] - single element
       const state = monteCarlo.getState();
 
       expect(state.sequence).toEqual([2]);
@@ -173,10 +173,10 @@ describe('MonteCarloMethod', () => {
       expect(state.sessionActive).toBe(true);
     });
 
-    it('should set bet to 0 when sequence is empty after session completion', () => {
+    it("should set bet to 0 when sequence is empty after session completion", () => {
       monteCarlo.initSession(10);
-      monteCarlo.recordResult('win'); // [2]
-      monteCarlo.recordResult('win'); // [] - session complete
+      monteCarlo.recordResult("win"); // [2]
+      monteCarlo.recordResult("win"); // [] - session complete
       const state = monteCarlo.getState();
 
       expect(state.sequence).toEqual([]);

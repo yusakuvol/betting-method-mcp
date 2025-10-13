@@ -1,4 +1,4 @@
-import type { MonteCarloState, BetResult } from '../types.js';
+import type { MonteCarloState, BetResult } from "../types.js";
 
 /**
  * Monte Carlo betting method calculator
@@ -52,12 +52,12 @@ export class MonteCarloMethod {
    */
   recordResult(result: BetResult): void {
     if (!this.state.sessionActive) {
-      throw new Error('No active session. Please initialize a session first.');
+      throw new Error("No active session. Please initialize a session first.");
     }
 
     const currentBetAmount = this.state.currentBet;
 
-    if (result === 'win') {
+    if (result === "win") {
       // Update profit
       this.state.totalProfit += currentBetAmount;
 

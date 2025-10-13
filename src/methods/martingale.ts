@@ -1,4 +1,4 @@
-import type { MartingaleState, BetResult } from '../types.js';
+import type { MartingaleState, BetResult } from "../types.js";
 
 /**
  * Martingale betting method calculator
@@ -30,7 +30,7 @@ export class MartingaleMethod {
    */
   initSession(baseUnit: number, maxBet?: number, maxLossStreak?: number): void {
     if (baseUnit <= 0) {
-      throw new Error('baseUnit must be positive');
+      throw new Error("baseUnit must be positive");
     }
 
     this.state = {
@@ -46,7 +46,7 @@ export class MartingaleMethod {
 
     // Validate maxBet
     if (this.state.maxBet < baseUnit) {
-      throw new Error('maxBet must be greater than or equal to baseUnit');
+      throw new Error("maxBet must be greater than or equal to baseUnit");
     }
   }
 
@@ -55,12 +55,12 @@ export class MartingaleMethod {
    */
   recordResult(result: BetResult): void {
     if (!this.state.sessionActive) {
-      throw new Error('No active session. Please initialize a session first.');
+      throw new Error("No active session. Please initialize a session first.");
     }
 
     const currentBetAmount = this.state.currentBet;
 
-    if (result === 'win') {
+    if (result === "win") {
       // Update profit
       this.state.totalProfit += currentBetAmount;
 
