@@ -4,6 +4,7 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { CocomoMethod } from "./methods/cocomo.js";
+import { GoodmanMethod } from "./methods/goodman.js";
 import { LabouchereMethod } from "./methods/labouchere.js";
 import { MartingaleMethod } from "./methods/martingale.js";
 import { MonteCarloMethod } from "./methods/montecarlo.js";
@@ -13,6 +14,7 @@ import { OscarsGrindMethod } from "./methods/oscarsgrind.js";
 const monteCarlo = new MonteCarloMethod();
 const martingale = new MartingaleMethod();
 const cocomo = new CocomoMethod();
+const goodman = new GoodmanMethod();
 const labouchere = new LabouchereMethod();
 const oscarsGrind = new OscarsGrindMethod();
 
@@ -188,6 +190,53 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: "cocomo_reset",
         description: "Reset the current Cocomo session to initial state",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
+        name: "goodman_init",
+        description: "Initialize a new Goodman (1-2-3-5) betting session with a base unit amount",
+        inputSchema: {
+          type: "object",
+          properties: {
+            baseUnit: {
+              type: "number",
+              description: "The base unit amount for betting (e.g., 1, 10, 100)",
+              minimum: 0.01,
+            },
+          },
+          required: ["baseUnit"],
+        },
+      },
+      {
+        name: "goodman_record",
+        description: "Record a bet result (win or loss) and get the next bet amount",
+        inputSchema: {
+          type: "object",
+          properties: {
+            result: {
+              type: "string",
+              enum: ["win", "loss"],
+              description: "The result of the bet",
+            },
+          },
+          required: ["result"],
+        },
+      },
+      {
+        name: "goodman_status",
+        description:
+          "Get the current Goodman session status including current bet, step, win streak, and total profit",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
+        name: "goodman_reset",
+        description: "Reset the current Goodman session to initial state",
         inputSchema: {
           type: "object",
           properties: {},
@@ -623,6 +672,110 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                   currentBet: state.currentBet,
                   totalProfit: state.totalProfit,
                   sessionActive: state.sessionActive,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "goodman_init": {
+        const { baseUnit } = args as { baseUnit: number };
+        goodman.initSession(baseUnit);
+        const state = goodman.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: "Goodman session initialized",
+                  baseUnit: state.baseUnit,
+                  sequence: state.sequence,
+                  currentBet: state.currentBet,
+                  currentStep: state.currentStep,
+                  winStreak: state.winStreak,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                  cyclesCompleted: state.cyclesCompleted,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "goodman_record": {
+        const { result } = args as { result: "win" | "loss" };
+        goodman.recordResult(result);
+        const state = goodman.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: `Recorded ${result}`,
+                  currentBet: state.currentBet,
+                  currentStep: state.currentStep,
+                  winStreak: state.winStreak,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                  cyclesCompleted: state.cyclesCompleted,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "goodman_status": {
+        const state = goodman.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  baseUnit: state.baseUnit,
+                  sequence: state.sequence,
+                  currentBet: state.currentBet,
+                  currentStep: state.currentStep,
+                  winStreak: state.winStreak,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                  cyclesCompleted: state.cyclesCompleted,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "goodman_reset": {
+        goodman.reset();
+        const state = goodman.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: "Session reset to initial state",
+                  baseUnit: state.baseUnit,
+                  currentBet: state.currentBet,
+                  currentStep: state.currentStep,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                  cyclesCompleted: state.cyclesCompleted,
                 },
                 null,
                 2,
