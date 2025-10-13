@@ -50,6 +50,19 @@ export interface MartingaleState extends BettingMethodState {
 }
 
 /**
+ * Labouchere method specific state
+ */
+export interface LabouchereState extends BettingMethodState {
+  baseUnit: number;
+  sequence: number[];
+  initialSequence: number[];
+  targetProfit: number;
+  maxSequenceLength: number;
+  sessionsCompleted: number;
+  reachedLimit: boolean;
+}
+
+/**
  * Oscar's Grind method specific state
  */
 export interface OscarsGrindState extends BettingMethodState {
