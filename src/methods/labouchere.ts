@@ -117,11 +117,9 @@ export class LabouchereMethod {
 
   /**
    * Calculate the current bet amount based on sequence
+   * Note: sequence is guaranteed to be non-empty by caller
    */
   private calculateBet(sequence: number[], baseUnit: number): number {
-    if (sequence.length === 0) {
-      return 0;
-    }
     if (sequence.length === 1) {
       return sequence[0] * baseUnit;
     }
