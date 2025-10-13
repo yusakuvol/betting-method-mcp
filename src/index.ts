@@ -3,8 +3,8 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
-import { MonteCarloMethod } from "./methods/montecarlo.js";
 import { MartingaleMethod } from "./methods/martingale.js";
+import { MonteCarloMethod } from "./methods/montecarlo.js";
 
 // Initialize method instances
 const monteCarlo = new MonteCarloMethod();

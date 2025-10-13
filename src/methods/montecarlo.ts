@@ -1,4 +1,4 @@
-import type { MonteCarloState, BetResult } from "../types.js";
+import type { BetResult, MonteCarloState } from "../types.js";
 
 /**
  * Monte Carlo betting method calculator

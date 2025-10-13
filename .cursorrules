@@ -1,0 +1,237 @@
+# Cursor/Codex Rules for betting-method-mcp
+
+## Project Type
+TypeScript MCP (Model Context Protocol) server for betting method calculations
+
+## Stack
+- TypeScript (strict mode)
+- Node.js >= 18
+- MCP SDK
+- Vitest (testing)
+- Biome (linter/formatter)
+
+## Code Style (Enforced by Biome)
+- Double quotes ALWAYS
+- Semicolons ALWAYS
+- 2 space indentation
+- 100 character line width
+- Trailing commas everywhere
+- Arrow function parentheses always
+
+## Naming Rules
+- Classes: PascalCase (MonteCarloMethod)
+- Interfaces: PascalCase + "State" suffix (MonteCarloState)
+- Functions: camelCase (recordResult, initSession)
+- MCP tools: lowercase_underscore (montecarlo_init)
+- Files: lowercase (montecarlo.ts, martingale.ts)
+
+## Architecture Pattern
+
+### Every betting method class MUST have:
+1. `private state: MethodState` property
+2. `constructor()` - default initialization
+3. `initSession(params)` - setup with validation
+4. `recordResult(result: "win" | "loss")` - update logic
+5. `getState()` - return COPY of state (immutability!)
+6. `reset()` - restart session
+
+### Every state interface MUST:
+- Extend `BettingMethodState`
+- Include these required properties:
+  - currentBet: number
+  - totalProfit: number
+  - sessionActive: boolean
+
+### Every MCP method MUST register 4 tools:
+- {method}_init
+- {method}_record
+- {method}_status
+- {method}_reset
+
+## Critical Rules
+
+### ✅ ALWAYS DO:
+- Validate ALL parameters in initSession()
+- Check sessionActive before recordResult()
+- Return state COPY from getState() using spread: `{ ...this.state }`
+- Use double quotes for strings
+- Add semicolons to every statement
+- Write comprehensive tests (8+ test cases per method)
+- Throw descriptive errors with actionable messages
+- Update totalProfit in recordResult()
+
+### ❌ NEVER DO:
+- Return state directly from getState() (breaks immutability)
+- Skip parameter validation
+- Modify state without creating new object
+- Use single quotes
+- Omit semicolons
+- Process results without checking sessionActive
+- Write vague error messages
+
+## Testing Requirements (Vitest)
+
+Every method needs tests for:
+1. initSession - valid params & error cases
+2. recordResult - win scenarios
+3. recordResult - loss scenarios
+4. recordResult - mixed sequences
+5. getState - immutability check
+6. reset - state reset verification
+7. error handling - session not active
+8. edge cases - limits and boundaries
+
+Test structure:
+```typescript
+describe("MethodName", () => {
+  let method: MethodMethod;
+
+  beforeEach(() => {
+    method = new MethodMethod();
+  });
+
+  describe("feature", () => {
+    it("should do something specific", () => {
+      // test
+    });
+  });
+});
+```
+
+## Error Messages Format
+
+Use this format:
+- "baseUnit must be positive"
+- "No active session. Please initialize a session first."
+- "Session ended: {reason}"
+- "maxBet must be greater than or equal to baseUnit"
+
+## File Structure
+
+```
+src/
+├── index.ts           # MCP server + tool registration
+├── types.ts           # All interfaces
+└── methods/
+    ├── {method}.ts    # Implementation
+    └── __tests__/
+        └── {method}.test.ts  # Tests
+```
+
+## Import Style
+
+```typescript
+// External packages first
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+
+// Internal modules second
+import { MonteCarloMethod } from "./methods/montecarlo.js";
+import type { BetResult, MonteCarloState } from "./types.js";
+```
+
+## State Update Pattern
+
+ALWAYS use spread operator for state updates:
+```typescript
+this.state = {
+  ...this.state,
+  currentBet: newBet,
+  totalProfit: this.state.totalProfit + amount,
+};
+```
+
+## Parameter Validation Pattern
+
+```typescript
+if (baseUnit <= 0) {
+  throw new Error("baseUnit must be positive");
+}
+if (maxBet && maxBet < baseUnit) {
+  throw new Error("maxBet must be greater than or equal to baseUnit");
+}
+```
+
+## Session Check Pattern
+
+```typescript
+if (!this.state.sessionActive) {
+  throw new Error("No active session. Please initialize a session first.");
+}
+```
+
+## MCP Response Pattern
+
+```typescript
+return {
+  content: [
+    {
+      type: "text",
+      text: JSON.stringify(
+        {
+          message: "Descriptive message",
+          ...state,
+        },
+        null,
+        2,
+      ),
+    },
+  ],
+};
+```
+
+## Common Calculations
+
+### Profit calculation (win):
+```typescript
+const profit = this.state.currentBet;
+this.state.totalProfit += profit;
+```
+
+### Profit calculation (loss):
+```typescript
+const loss = -this.state.currentBet;
+this.state.totalProfit += loss;
+```
+
+## Pre-commit Commands
+
+Before suggesting commits:
+1. npm run build (TypeScript check)
+2. npm test (all tests pass)
+3. npm run check (lint + format)
+
+## Documentation
+
+Add JSDoc to public methods:
+```typescript
+/**
+ * Initialize a new betting session
+ * @param baseUnit Base unit amount for betting
+ */
+initSession(baseUnit: number): void {
+  // ...
+}
+```
+
+## References
+
+- Existing implementations: src/methods/montecarlo.ts, src/methods/martingale.ts
+- Type definitions: src/types.ts
+- Architecture: .dccs/architecture.md
+- Test examples: src/methods/__tests__/*.test.ts
+
+## Project Goal
+
+Educational tool for understanding betting strategies.
+NOT for production gambling.
+Focus: Type safety, testability, extensibility.
+
+## When Adding New Methods
+
+1. Add interface to types.ts
+2. Create class in methods/{method}.ts
+3. Register 4 MCP tools in index.ts
+4. Write comprehensive tests
+5. Update README.md
+
+Use custom command: /implement <issue_number>

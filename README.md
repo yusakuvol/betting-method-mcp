@@ -138,16 +138,62 @@ npm run test:ui
 npm run test:coverage
 ```
 
+### Code Quality
+
+This project uses Biome for linting and formatting.
+
+```bash
+# Lint check
+npm run lint
+
+# Lint with auto-fix
+npm run lint:fix
+
+# Format code
+npm run format
+
+# Check formatting
+npm run format:check
+
+# Run all checks (lint + format)
+npm run check
+```
+
 ### Continuous Integration (CI)
 
 This project uses GitHub Actions for CI/CD:
 
+- **Code Quality Checks**: Linting and formatting checks on every PR
 - **Automated Testing**: Tests run automatically on every PR
 - **Multi-Version Support**: Tests run on Node.js 18, 20, and 22
 - **Build Verification**: TypeScript compilation is verified
 - **Coverage Reports**: Test coverage is tracked and uploaded as artifacts
 
 See [`.github/workflows/ci.yml`](.github/workflows/ci.yml) for details.
+
+## AI-Assisted Development
+
+This project includes context files for various AI coding assistants:
+
+- **[CLAUDE.md](CLAUDE.md)** - Comprehensive context for Claude AI assistants
+- **[AGENT.md](AGENT.md)** - General context for any AI agent
+- **[.github/copilot-instructions.md](.github/copilot-instructions.md)** - GitHub Copilot specific instructions
+- **[.cursorrules](.cursorrules)** - Cursor/Codex AI rules
+
+These files provide:
+- Project architecture and design patterns
+- Code style and conventions
+- Testing guidelines
+- Common implementation patterns
+- Best practices and pitfalls to avoid
+
+### For AI Developers
+
+When working with AI assistants on this project, the context files help ensure:
+- Consistent code style (enforced by Biome)
+- Proper TypeScript patterns
+- Comprehensive test coverage
+- Correct MCP tool implementation
 
 ### Claude Code Custom Command
 
