@@ -5,10 +5,12 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { MartingaleMethod } from "./methods/martingale.js";
 import { MonteCarloMethod } from "./methods/montecarlo.js";
+import { PercentageMethod } from "./methods/percentage.js";
 
 // Initialize method instances
 const monteCarlo = new MonteCarloMethod();
 const martingale = new MartingaleMethod();
+const percentage = new PercentageMethod();
 
 // Create MCP server
 const server = new Server(
@@ -129,6 +131,65 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: "martingale_reset",
         description: "Reset the current Martingale session to initial state",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
+        name: "percentage_init",
+        description:
+          "Initialize a new Percentage betting session (Fixed Percentage Betting / 10%法)",
+        inputSchema: {
+          type: "object",
+          properties: {
+            initialBankroll: {
+              type: "number",
+              description: "Initial bankroll amount (e.g., 1000)",
+              minimum: 0.01,
+            },
+            betPercentage: {
+              type: "number",
+              description: "Bet percentage as a decimal (e.g., 0.1 for 10%)",
+              minimum: 0,
+              maximum: 1,
+            },
+            minBet: {
+              type: "number",
+              description: "Minimum bet amount",
+              minimum: 0.01,
+            },
+          },
+          required: ["initialBankroll", "betPercentage", "minBet"],
+        },
+      },
+      {
+        name: "percentage_record",
+        description: "Record a bet result (win or loss) and get the next bet amount",
+        inputSchema: {
+          type: "object",
+          properties: {
+            result: {
+              type: "string",
+              enum: ["win", "loss"],
+              description: "The result of the bet",
+            },
+          },
+          required: ["result"],
+        },
+      },
+      {
+        name: "percentage_status",
+        description:
+          "Get the current Percentage session status including bankroll, current bet, and profit percentage",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
+        name: "percentage_reset",
+        description: "Reset the current Percentage session to initial state",
         inputSchema: {
           type: "object",
           properties: {},
@@ -333,6 +394,116 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 {
                   message: "Session reset to initial state",
                   baseUnit: state.baseUnit,
+                  currentBet: state.currentBet,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "percentage_init": {
+        const { initialBankroll, betPercentage, minBet } = args as {
+          initialBankroll: number;
+          betPercentage: number;
+          minBet: number;
+        };
+        percentage.initSession(initialBankroll, betPercentage, minBet);
+        const state = percentage.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: "Percentage betting session initialized",
+                  initialBankroll: state.initialBankroll,
+                  currentBankroll: state.currentBankroll,
+                  betPercentage: state.betPercentage,
+                  minBet: state.minBet,
+                  currentBet: state.currentBet,
+                  totalProfit: state.totalProfit,
+                  profitPercentage: state.profitPercentage,
+                  sessionActive: state.sessionActive,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "percentage_record": {
+        const { result } = args as { result: "win" | "loss" };
+        percentage.recordResult(result);
+        const state = percentage.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: `Recorded ${result}`,
+                  currentBankroll: state.currentBankroll,
+                  currentBet: state.currentBet,
+                  totalProfit: state.totalProfit,
+                  profitPercentage: state.profitPercentage,
+                  totalWins: state.totalWins,
+                  totalLosses: state.totalLosses,
+                  sessionActive: state.sessionActive,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "percentage_status": {
+        const state = percentage.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  initialBankroll: state.initialBankroll,
+                  currentBankroll: state.currentBankroll,
+                  betPercentage: state.betPercentage,
+                  minBet: state.minBet,
+                  currentBet: state.currentBet,
+                  totalWins: state.totalWins,
+                  totalLosses: state.totalLosses,
+                  totalProfit: state.totalProfit,
+                  profitPercentage: state.profitPercentage,
+                  sessionActive: state.sessionActive,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "percentage_reset": {
+        percentage.reset();
+        const state = percentage.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: "Session reset to initial state",
+                  initialBankroll: state.initialBankroll,
+                  currentBankroll: state.currentBankroll,
                   currentBet: state.currentBet,
                   totalProfit: state.totalProfit,
                   sessionActive: state.sessionActive,

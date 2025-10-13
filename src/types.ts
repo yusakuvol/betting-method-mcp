@@ -48,3 +48,16 @@ export interface MartingaleState extends BettingMethodState {
   maxLossStreak: number;
   reachedLimit: boolean;
 }
+
+/**
+ * Percentage method specific state (Fixed Percentage Betting)
+ */
+export interface PercentageState extends BettingMethodState {
+  initialBankroll: number;
+  currentBankroll: number;
+  betPercentage: number;
+  minBet: number;
+  totalWins: number;
+  totalLosses: number;
+  profitPercentage: number;
+}
