@@ -1482,7 +1482,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                   currentBet: state.currentBet,
                   totalProfit: state.totalProfit,
                   sessionActive: state.sessionActive,
->>>>>>> origin/main
                 },
                 null,
                 2,
