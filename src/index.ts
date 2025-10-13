@@ -4,6 +4,7 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { CocomoMethod } from "./methods/cocomo.js";
+import { FibonacciMethod } from "./methods/fibonacci.js";
 import { GoodmanMethod } from "./methods/goodman.js";
 import { LabouchereMethod } from "./methods/labouchere.js";
 import { MartingaleMethod } from "./methods/martingale.js";
@@ -15,6 +16,7 @@ import { PercentageMethod } from "./methods/percentage.js";
 const monteCarlo = new MonteCarloMethod();
 const martingale = new MartingaleMethod();
 const cocomo = new CocomoMethod();
+const fibonacci = new FibonacciMethod();
 const goodman = new GoodmanMethod();
 const labouchere = new LabouchereMethod();
 const oscarsGrind = new OscarsGrindMethod();
@@ -363,6 +365,59 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: "oscarsgrind_reset",
         description: "Reset the current Oscar's Grind session to initial state",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
+        name: "fibonacci_init",
+        description:
+          "Initialize a new Fibonacci betting session with base unit and optional maximum index",
+        inputSchema: {
+          type: "object",
+          properties: {
+            baseUnit: {
+              type: "number",
+              description: "The base unit amount for betting (e.g., 1, 10, 100)",
+              minimum: 0.01,
+            },
+            maxIndex: {
+              type: "number",
+              description: "Maximum sequence index before session ends (optional, default: 20)",
+              minimum: 1,
+            },
+          },
+          required: ["baseUnit"],
+        },
+      },
+      {
+        name: "fibonacci_record",
+        description: "Record a bet result (win or loss) and get the next bet amount",
+        inputSchema: {
+          type: "object",
+          properties: {
+            result: {
+              type: "string",
+              enum: ["win", "loss"],
+              description: "The result of the bet",
+            },
+          },
+          required: ["result"],
+        },
+      },
+      {
+        name: "fibonacci_status",
+        description:
+          "Get the current Fibonacci session status including sequence position, current bet, and total profit",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
+        name: "fibonacci_reset",
+        description: "Reset the current Fibonacci session to initial state",
         inputSchema: {
           type: "object",
           properties: {},
@@ -1058,6 +1113,106 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                   totalProfit: state.totalProfit,
                   sessionActive: state.sessionActive,
                   sessionsCompleted: state.sessionsCompleted,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "fibonacci_init": {
+        const { baseUnit, maxIndex } = args as { baseUnit: number; maxIndex?: number };
+        fibonacci.initSession(baseUnit, maxIndex);
+        const state = fibonacci.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: "Fibonacci session initialized",
+                  baseUnit: state.baseUnit,
+                  currentIndex: state.currentIndex,
+                  currentBet: state.currentBet,
+                  maxIndex: state.maxIndex,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "fibonacci_record": {
+        const { result } = args as { result: "win" | "loss" };
+        fibonacci.recordResult(result);
+        const state = fibonacci.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: `Recorded ${result}`,
+                  currentIndex: state.currentIndex,
+                  currentBet: state.currentBet,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                  reachedLimit: state.reachedLimit,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "fibonacci_status": {
+        const state = fibonacci.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  baseUnit: state.baseUnit,
+                  currentIndex: state.currentIndex,
+                  currentBet: state.currentBet,
+                  maxIndex: state.maxIndex,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                  reachedLimit: state.reachedLimit,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "fibonacci_reset": {
+        fibonacci.reset();
+        const state = fibonacci.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: "Session reset to initial state",
+                  baseUnit: state.baseUnit,
+                  currentIndex: state.currentIndex,
+                  currentBet: state.currentBet,
+                  maxIndex: state.maxIndex,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
                 },
                 null,
                 2,
