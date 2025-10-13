@@ -48,3 +48,16 @@ export interface MartingaleState extends BettingMethodState {
   maxLossStreak: number;
   reachedLimit: boolean;
 }
+
+/**
+ * Labouchere method specific state
+ */
+export interface LabouchereState extends BettingMethodState {
+  baseUnit: number;
+  sequence: number[];
+  initialSequence: number[];
+  targetProfit: number;
+  maxSequenceLength: number;
+  sessionsCompleted: number;
+  reachedLimit: boolean;
+}

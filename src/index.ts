@@ -3,12 +3,14 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
+import { LabouchereMethod } from "./methods/labouchere.js";
 import { MartingaleMethod } from "./methods/martingale.js";
 import { MonteCarloMethod } from "./methods/montecarlo.js";
 
 // Initialize method instances
 const monteCarlo = new MonteCarloMethod();
 const martingale = new MartingaleMethod();
+const labouchere = new LabouchereMethod();
 
 // Create MCP server
 const server = new Server(
@@ -129,6 +131,72 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: "martingale_reset",
         description: "Reset the current Martingale session to initial state",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
+        name: "labouchere_init",
+        description:
+          "Initialize a new Labouchere betting session with target profit and optional sequence",
+        inputSchema: {
+          type: "object",
+          properties: {
+            baseUnit: {
+              type: "number",
+              description: "The base unit amount for betting (e.g., 1, 10, 100)",
+              minimum: 0.01,
+            },
+            targetProfit: {
+              type: "number",
+              description: "Target profit in units (e.g., 10, 20, 100)",
+              minimum: 0.01,
+            },
+            initialSequence: {
+              type: "array",
+              description:
+                "Initial number sequence (optional, must sum to targetProfit, e.g., [1, 2, 3, 4] for target 10)",
+              items: {
+                type: "number",
+              },
+            },
+            maxSequenceLength: {
+              type: "number",
+              description: "Maximum sequence length before session ends (optional, default: 20)",
+              minimum: 1,
+            },
+          },
+          required: ["baseUnit", "targetProfit"],
+        },
+      },
+      {
+        name: "labouchere_record",
+        description: "Record a bet result (win or loss) and get the next bet amount",
+        inputSchema: {
+          type: "object",
+          properties: {
+            result: {
+              type: "string",
+              enum: ["win", "loss"],
+              description: "The result of the bet",
+            },
+          },
+          required: ["result"],
+        },
+      },
+      {
+        name: "labouchere_status",
+        description:
+          "Get the current Labouchere session status including sequence, current bet, and total profit",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
+        name: "labouchere_reset",
+        description: "Reset the current Labouchere session to initial state",
         inputSchema: {
           type: "object",
           properties: {},
@@ -333,6 +401,115 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 {
                   message: "Session reset to initial state",
                   baseUnit: state.baseUnit,
+                  currentBet: state.currentBet,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "labouchere_init": {
+        const { baseUnit, targetProfit, initialSequence, maxSequenceLength } = args as {
+          baseUnit: number;
+          targetProfit: number;
+          initialSequence?: number[];
+          maxSequenceLength?: number;
+        };
+        labouchere.initSession(baseUnit, targetProfit, initialSequence, maxSequenceLength);
+        const state = labouchere.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: "Labouchere session initialized",
+                  baseUnit: state.baseUnit,
+                  targetProfit: state.targetProfit,
+                  sequence: state.sequence,
+                  currentBet: state.currentBet,
+                  maxSequenceLength: state.maxSequenceLength,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "labouchere_record": {
+        const { result } = args as { result: "win" | "loss" };
+        labouchere.recordResult(result);
+        const state = labouchere.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: `Recorded ${result}`,
+                  sequence: state.sequence,
+                  currentBet: state.currentBet,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                  sessionsCompleted: state.sessionsCompleted,
+                  reachedLimit: state.reachedLimit,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "labouchere_status": {
+        const state = labouchere.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  baseUnit: state.baseUnit,
+                  targetProfit: state.targetProfit,
+                  sequence: state.sequence,
+                  currentBet: state.currentBet,
+                  maxSequenceLength: state.maxSequenceLength,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                  sessionsCompleted: state.sessionsCompleted,
+                  reachedLimit: state.reachedLimit,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "labouchere_reset": {
+        labouchere.reset();
+        const state = labouchere.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: "Session reset to initial state",
+                  baseUnit: state.baseUnit,
+                  targetProfit: state.targetProfit,
+                  sequence: state.sequence,
                   currentBet: state.currentBet,
                   totalProfit: state.totalProfit,
                   sessionActive: state.sessionActive,
