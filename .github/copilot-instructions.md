@@ -361,4 +361,4 @@ Before suggesting code changes, remember:
 
 - Type definitions: `src/types.ts`
 - Existing implementations: `src/methods/montecarlo.ts`, `src/methods/martingale.ts`
-- Architecture docs: `.dccs/architecture.md`
+- Architecture docs: `.docs/architecture.md`

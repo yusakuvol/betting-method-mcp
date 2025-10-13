@@ -236,7 +236,7 @@ betting-method-mcp/
 │   ├── commands/
 │   │   └── implement.md            # Custom command for auto-implementation
 │   └── settings.local.json         # Local settings
-├── .dccs/                          # Detailed specifications for each method (Japanese)
+├── .docs/                          # Detailed specifications for each method (Japanese)
 │   ├── architecture.md             # Architecture design
 │   └── martingale.md               # Martingale method details
 ├── build/                          # Compiled files
