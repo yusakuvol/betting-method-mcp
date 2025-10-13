@@ -5,18 +5,22 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { CocomoMethod } from "./methods/cocomo.js";
 import { FibonacciMethod } from "./methods/fibonacci.js";
+import { GoodmanMethod } from "./methods/goodman.js";
 import { LabouchereMethod } from "./methods/labouchere.js";
 import { MartingaleMethod } from "./methods/martingale.js";
 import { MonteCarloMethod } from "./methods/montecarlo.js";
 import { OscarsGrindMethod } from "./methods/oscarsgrind.js";
+import { PercentageMethod } from "./methods/percentage.js";
 
 // Initialize method instances
 const monteCarlo = new MonteCarloMethod();
 const martingale = new MartingaleMethod();
 const cocomo = new CocomoMethod();
+const fibonacci = new FibonacciMethod();
+const goodman = new GoodmanMethod();
 const labouchere = new LabouchereMethod();
 const oscarsGrind = new OscarsGrindMethod();
-const fibonacci = new FibonacciMethod();
+const percentage = new PercentageMethod();
 
 // Create MCP server
 const server = new Server(
@@ -196,6 +200,53 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         },
       },
       {
+        name: "goodman_init",
+        description: "Initialize a new Goodman (1-2-3-5) betting session with a base unit amount",
+        inputSchema: {
+          type: "object",
+          properties: {
+            baseUnit: {
+              type: "number",
+              description: "The base unit amount for betting (e.g., 1, 10, 100)",
+              minimum: 0.01,
+            },
+          },
+          required: ["baseUnit"],
+        },
+      },
+      {
+        name: "goodman_record",
+        description: "Record a bet result (win or loss) and get the next bet amount",
+        inputSchema: {
+          type: "object",
+          properties: {
+            result: {
+              type: "string",
+              enum: ["win", "loss"],
+              description: "The result of the bet",
+            },
+          },
+          required: ["result"],
+        },
+      },
+      {
+        name: "goodman_status",
+        description:
+          "Get the current Goodman session status including current bet, step, win streak, and total profit",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
+        name: "goodman_reset",
+        description: "Reset the current Goodman session to initial state",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
         name: "labouchere_init",
         description:
           "Initialize a new Labouchere betting session with target profit and optional sequence",
@@ -367,6 +418,65 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: "fibonacci_reset",
         description: "Reset the current Fibonacci session to initial state",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
+        name: "percentage_init",
+        description:
+          "Initialize a new Percentage (Fixed Percentage Betting) session with bankroll, percentage, and minimum bet",
+        inputSchema: {
+          type: "object",
+          properties: {
+            initialBankroll: {
+              type: "number",
+              description: "The initial bankroll amount (e.g., 1000)",
+              minimum: 0.01,
+            },
+            betPercentage: {
+              type: "number",
+              description: "The percentage of bankroll to bet (e.g., 0.1 for 10%)",
+              minimum: 0.001,
+              maximum: 1,
+            },
+            minBet: {
+              type: "number",
+              description: "The minimum bet amount (floor when bankroll is low)",
+              minimum: 0.01,
+            },
+          },
+          required: ["initialBankroll", "betPercentage", "minBet"],
+        },
+      },
+      {
+        name: "percentage_record",
+        description: "Record a bet result (win or loss) and get the next bet amount",
+        inputSchema: {
+          type: "object",
+          properties: {
+            result: {
+              type: "string",
+              enum: ["win", "loss"],
+              description: "The result of the bet",
+            },
+          },
+          required: ["result"],
+        },
+      },
+      {
+        name: "percentage_status",
+        description:
+          "Get the current Percentage betting session status including bankroll, current bet, and profit percentage",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
+        name: "percentage_reset",
+        description: "Reset the current Percentage betting session to initial state",
         inputSchema: {
           type: "object",
           properties: {},
@@ -687,6 +797,110 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
+      case "goodman_init": {
+        const { baseUnit } = args as { baseUnit: number };
+        goodman.initSession(baseUnit);
+        const state = goodman.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: "Goodman session initialized",
+                  baseUnit: state.baseUnit,
+                  sequence: state.sequence,
+                  currentBet: state.currentBet,
+                  currentStep: state.currentStep,
+                  winStreak: state.winStreak,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                  cyclesCompleted: state.cyclesCompleted,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "goodman_record": {
+        const { result } = args as { result: "win" | "loss" };
+        goodman.recordResult(result);
+        const state = goodman.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: `Recorded ${result}`,
+                  currentBet: state.currentBet,
+                  currentStep: state.currentStep,
+                  winStreak: state.winStreak,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                  cyclesCompleted: state.cyclesCompleted,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "goodman_status": {
+        const state = goodman.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  baseUnit: state.baseUnit,
+                  sequence: state.sequence,
+                  currentBet: state.currentBet,
+                  currentStep: state.currentStep,
+                  winStreak: state.winStreak,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                  cyclesCompleted: state.cyclesCompleted,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "goodman_reset": {
+        goodman.reset();
+        const state = goodman.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: "Session reset to initial state",
+                  baseUnit: state.baseUnit,
+                  currentBet: state.currentBet,
+                  currentStep: state.currentStep,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                  cyclesCompleted: state.cyclesCompleted,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
       case "labouchere_init": {
         const { baseUnit, targetProfit, initialSequence, maxSequenceLength } = args as {
           baseUnit: number;
@@ -997,6 +1211,117 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                   currentIndex: state.currentIndex,
                   currentBet: state.currentBet,
                   maxIndex: state.maxIndex,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "percentage_init": {
+        const { initialBankroll, betPercentage, minBet } = args as {
+          initialBankroll: number;
+          betPercentage: number;
+          minBet: number;
+        };
+        percentage.initSession(initialBankroll, betPercentage, minBet);
+        const state = percentage.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: "Percentage betting session initialized",
+                  initialBankroll: state.initialBankroll,
+                  currentBankroll: state.currentBankroll,
+                  betPercentage: state.betPercentage,
+                  minBet: state.minBet,
+                  currentBet: state.currentBet,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "percentage_record": {
+        const { result } = args as { result: "win" | "loss" };
+        percentage.recordResult(result);
+        const state = percentage.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: `Recorded ${result}`,
+                  currentBankroll: state.currentBankroll,
+                  currentBet: state.currentBet,
+                  totalProfit: state.totalProfit,
+                  profitPercentage: state.profitPercentage,
+                  totalWins: state.totalWins,
+                  totalLosses: state.totalLosses,
+                  sessionActive: state.sessionActive,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "percentage_status": {
+        const state = percentage.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  initialBankroll: state.initialBankroll,
+                  currentBankroll: state.currentBankroll,
+                  betPercentage: state.betPercentage,
+                  minBet: state.minBet,
+                  currentBet: state.currentBet,
+                  totalWins: state.totalWins,
+                  totalLosses: state.totalLosses,
+                  totalProfit: state.totalProfit,
+                  profitPercentage: state.profitPercentage,
+                  sessionActive: state.sessionActive,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "percentage_reset": {
+        percentage.reset();
+        const state = percentage.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: "Session reset to initial state",
+                  initialBankroll: state.initialBankroll,
+                  currentBankroll: state.currentBankroll,
+                  betPercentage: state.betPercentage,
+                  minBet: state.minBet,
+                  currentBet: state.currentBet,
                   totalProfit: state.totalProfit,
                   sessionActive: state.sessionActive,
                 },
