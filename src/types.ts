@@ -96,3 +96,16 @@ export interface OscarsGrindState extends BettingMethodState {
   currentProfitUnits: number;
   sessionsCompleted: number;
 }
+
+/**
+ * Percentage (Fixed Percentage Betting) method specific state
+ */
+export interface PercentageState extends BettingMethodState {
+  initialBankroll: number;
+  currentBankroll: number;
+  betPercentage: number;
+  minBet: number;
+  totalWins: number;
+  totalLosses: number;
+  profitPercentage: number;
+}
