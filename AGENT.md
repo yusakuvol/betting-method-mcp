@@ -45,7 +45,7 @@ betting-method-mcp/
 ├── .claude/                        # Claude Code configuration
 │   ├── commands/                   # Custom slash commands
 │   └── settings.local.json
-├── .dccs/                          # Detailed specifications (Japanese)
+├── .docs/                          # Detailed specifications (Japanese)
 │   ├── architecture.md
 │   └── martingale.md
 ├── .github/
@@ -284,8 +284,8 @@ npm run prepare            # Runs automatically on install
 
 ## References
 
-- **Detailed Architecture**: `.dccs/architecture.md` (Japanese)
-- **Method Specifications**: `.dccs/{method}.md` (Japanese)
+- **Detailed Architecture**: `.docs/architecture.md` (Japanese)
+- **Method Specifications**: `.docs/{method}.md` (Japanese)
 - **Custom Commands**: `.claude/commands/` directory
 - **MCP Documentation**: https://modelcontextprotocol.io/
 - **Vitest Docs**: https://vitest.dev/

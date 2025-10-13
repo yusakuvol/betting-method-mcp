@@ -72,7 +72,7 @@ args:
      - `edge cases` - エッジケース
    - 既存テスト（montecarlo.test.ts, martingale.test.ts）を参考にする
 
-   ### e. 仕様書の作成（オプション） (`.dccs/{method}.md`)
+   ### e. 仕様書の作成（オプション） (`.docs/{method}.md`)
    - issueの内容を元に詳細な仕様書を作成
    - 使用例、注意点、リスクなどを記載
 

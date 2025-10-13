@@ -169,7 +169,7 @@ it("should recover all losses plus initial bet on win after losses", () => {
 
 5. **Update Documentation**
    - Add to README.md
-   - Create specification in `.dccs/{method}.md` (optional)
+   - Create specification in `.docs/{method}.md` (optional)
 
 ### Use Custom Command
 For automated implementation based on GitHub issues:
@@ -266,8 +266,8 @@ npm run check           # Lint + format check
 
 ## Resources
 
-- **Architecture**: See `.dccs/architecture.md` (Japanese)
-- **Method Specs**: See `.dccs/{method}.md` files (Japanese)
+- **Architecture**: See `.docs/architecture.md` (Japanese)
+- **Method Specs**: See `.docs/{method}.md` files (Japanese)
 - **MCP Docs**: https://modelcontextprotocol.io/
 - **Custom Commands**: See `.claude/commands/` directory
 
