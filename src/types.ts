@@ -85,3 +85,14 @@ export interface OscarsGrindState extends BettingMethodState {
   currentProfitUnits: number;
   sessionsCompleted: number;
 }
+
+/**
+ * Fibonacci method specific state
+ */
+export interface FibonacciState extends BettingMethodState {
+  baseUnit: number;
+  sequence: number[];
+  currentIndex: number;
+  maxIndex: number;
+  reachedLimit: boolean;
+}
