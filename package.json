@@ -46,6 +46,12 @@
     "gambling",
     "money-management"
   ],
+  "ai-context": {
+    "claude": "CLAUDE.md",
+    "general": "AGENT.md",
+    "copilot": ".github/copilot-instructions.md",
+    "cursor": ".cursorrules"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4"
   },
