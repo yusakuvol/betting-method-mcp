@@ -48,3 +48,15 @@ export interface MartingaleState extends BettingMethodState {
   maxLossStreak: number;
   reachedLimit: boolean;
 }
+
+/**
+ * Oscar's Grind method specific state
+ */
+export interface OscarsGrindState extends BettingMethodState {
+  baseUnit: number;
+  currentBetUnits: number;
+  maxBetUnits: number;
+  targetProfitUnits: number;
+  currentProfitUnits: number;
+  sessionsCompleted: number;
+}
