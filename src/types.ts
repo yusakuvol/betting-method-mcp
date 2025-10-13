@@ -109,6 +109,16 @@ export interface FibonacciState extends BettingMethodState {
 }
 
 /**
+ * Paroli method specific state
+ */
+export interface ParoliState extends BettingMethodState {
+  baseUnit: number;
+  winStreak: number;
+  targetWinStreak: number;
+  cyclesCompleted: number;
+}
+
+/**
  * Percentage (Fixed Percentage Betting) method specific state
  */
 export interface PercentageState extends BettingMethodState {
