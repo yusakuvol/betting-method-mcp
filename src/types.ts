@@ -48,3 +48,12 @@ export interface MartingaleState extends BettingMethodState {
   maxLossStreak: number;
   reachedLimit: boolean;
 }
+
+/**
+ * D'Alembert method specific state
+ */
+export interface DAlembertState extends BettingMethodState {
+  baseUnit: number;
+  maxBet?: number;
+  reachedLimit: boolean;
+}
