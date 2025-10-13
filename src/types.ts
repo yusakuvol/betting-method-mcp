@@ -60,3 +60,28 @@ export interface CocomoState extends BettingMethodState {
   reachedLimit: boolean;
   payoutMultiplier: number;
 }
+
+/**
+ * Labouchere method specific state
+ */
+export interface LabouchereState extends BettingMethodState {
+  baseUnit: number;
+  sequence: number[];
+  initialSequence: number[];
+  targetProfit: number;
+  maxSequenceLength: number;
+  sessionsCompleted: number;
+  reachedLimit: boolean;
+}
+
+/**
+ * Oscar's Grind method specific state
+ */
+export interface OscarsGrindState extends BettingMethodState {
+  baseUnit: number;
+  currentBetUnits: number;
+  maxBetUnits: number;
+  targetProfitUnits: number;
+  currentProfitUnits: number;
+  sessionsCompleted: number;
+}
