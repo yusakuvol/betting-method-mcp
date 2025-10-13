@@ -48,3 +48,14 @@ export interface MartingaleState extends BettingMethodState {
   maxLossStreak: number;
   reachedLimit: boolean;
 }
+
+/**
+ * Goodman method specific state
+ */
+export interface GoodmanState extends BettingMethodState {
+  baseUnit: number;
+  sequence: number[];
+  currentStep: number;
+  winStreak: number;
+  cyclesCompleted: number;
+}
