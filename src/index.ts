@@ -197,8 +197,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "goodman_init",
-        description:
-          "Initialize a new Goodman (1-2-3-5) betting session with a base unit amount",
+        description: "Initialize a new Goodman (1-2-3-5) betting session with a base unit amount",
         inputSchema: {
           type: "object",
           properties: {
