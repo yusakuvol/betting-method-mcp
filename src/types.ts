@@ -50,6 +50,17 @@ export interface MartingaleState extends BettingMethodState {
 }
 
 /**
+ * Goodman method specific state
+ */
+export interface GoodmanState extends BettingMethodState {
+  baseUnit: number;
+  sequence: number[];
+  currentStep: number;
+  winStreak: number;
+  cyclesCompleted: number;
+}
+
+/**
  * Cocomo method specific state
  */
 export interface CocomoState extends BettingMethodState {
@@ -93,4 +104,38 @@ export interface DAlembertState extends BettingMethodState {
   baseUnit: number;
   maxBet?: number;
   reachedLimit: boolean;
+}
+
+/**
+ * Fibonacci method specific state
+ */
+export interface FibonacciState extends BettingMethodState {
+  baseUnit: number;
+  sequence: number[];
+  currentIndex: number;
+  maxIndex: number;
+  reachedLimit: boolean;
+}
+
+/**
+ * Paroli method specific state
+ */
+export interface ParoliState extends BettingMethodState {
+  baseUnit: number;
+  winStreak: number;
+  targetWinStreak: number;
+  cyclesCompleted: number;
+}
+
+/**
+ * Percentage (Fixed Percentage Betting) method specific state
+ */
+export interface PercentageState extends BettingMethodState {
+  initialBankroll: number;
+  currentBankroll: number;
+  betPercentage: number;
+  minBet: number;
+  totalWins: number;
+  totalLosses: number;
+  profitPercentage: number;
 }
