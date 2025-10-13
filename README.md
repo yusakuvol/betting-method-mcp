@@ -1,50 +1,40 @@
 # Betting Method MCP Server
 
 ![CI](https://github.com/yusakuvol/betting-method-mcp/actions/workflows/ci.yml/badge.svg)
+[![npm version](https://badge.fury.io/js/betting-method-mcp.svg)](https://www.npmjs.com/package/betting-method-mcp)
 
 An MCP (Model Context Protocol) server that provides calculations for various betting methods. Can be used with Claude Desktop and other MCP-compatible applications.
 
-Currently supports **Monte Carlo Method** and **Martingale Method**. Additional betting methods such as Paroli, D'Alembert, and others are planned for future releases.
+**✨ Now supports 10 betting methods!**
 
-## Features
+## 🎲 Supported Betting Methods
 
-### Monte Carlo Method
+- **Monte Carlo Method** - Sequence-based betting strategy
+- **Martingale Method** - Double on loss (high risk)
+- **Labouchere (Cancellation System)** - Flexible sequence strategy
+- **Oscar's Grind** - Conservative profit-targeting system
+- **Cocomo Method** - 3x payout Fibonacci progression
+- **Goodman (1-2-3-5)** - Fixed progression system
+- **Fibonacci Method** - Fibonacci sequence betting
+- **Paroli System** - Reverse Martingale (double on wins)
+- **D'Alembert Method** - Gradual increase/decrease
+- **Fixed Percentage Betting** - Bankroll percentage strategy (e.g., 10% method)
 
-The Monte Carlo method is a betting strategy that manages bet amounts using a number sequence.
+## 📦 Installation
 
-**How it works:**
-1. Set an initial sequence (e.g., `[1, 2, 3]`)
-2. Bet amount = (first number + last number) × base unit
-3. **On win**: Remove first and last numbers from the sequence
-4. **On loss**: Add the lost bet amount (in units) to the end of the sequence
-5. Session completes when the sequence has 0 or 1 numbers
+### Option 1: Install from npm (Recommended)
 
-**Available tools:**
-- `montecarlo_init` - Initialize a new session
-- `montecarlo_record` - Record a win/loss and get the next bet amount
-- `montecarlo_status` - Check current state (sequence, bet amount, profit/loss)
-- `montecarlo_reset` - Reset the session
+```bash
+npm install -g betting-method-mcp
+```
 
-### Martingale Method
+### Option 2: Use with npx (No installation needed)
 
-The Martingale method is a strategy that doubles the bet amount after each loss. When you win, you recover all previous losses plus gain a profit equal to the initial bet amount, but this method carries high risk during losing streaks.
+```bash
+npx betting-method-mcp
+```
 
-**How it works:**
-1. Set an initial bet amount
-2. Bet amount = initial bet × 2^(consecutive losses)
-3. **On win**: Reset bet amount to initial value
-4. **On loss**: Double the bet amount
-5. Session ends when maximum bet or maximum loss streak is reached
-
-**Available tools:**
-- `martingale_init` - Initialize a new session (set base bet, max bet, max loss streak)
-- `martingale_record` - Record a win/loss and get the next bet amount
-- `martingale_status` - Check current state (bet amount, loss streak, profit/loss)
-- `martingale_reset` - Reset the session
-
-**⚠️ Important:** The Martingale method causes bet amounts to increase exponentially during losing streaks. Always set limits and practice strict risk management.
-
-## Setup
+### Option 3: Install from GitHub
 
 ```bash
 git clone https://github.com/yusakuvol/betting-method-mcp.git
@@ -53,12 +43,36 @@ npm install
 npm run build
 ```
 
-## Usage
+## 🚀 Usage
 
 ### Claude Desktop Configuration
 
-Edit `claude_desktop_config.json`:
+Edit your `claude_desktop_config.json`:
 
+**If installed via npm:**
+```json
+{
+  "mcpServers": {
+    "betting-method": {
+      "command": "betting-method-mcp"
+    }
+  }
+}
+```
+
+**If using npx:**
+```json
+{
+  "mcpServers": {
+    "betting-method": {
+      "command": "npx",
+      "args": ["betting-method-mcp"]
+    }
+  }
+}
+```
+
+**If installed from GitHub:**
 ```json
 {
   "mcpServers": {
@@ -74,9 +88,16 @@ Edit `claude_desktop_config.json`:
 
 You can ask Claude Desktop questions like these:
 
-#### Monte Carlo Method
 ```
 Start a Monte Carlo session with base unit 10
+```
+
+```
+Initialize Martingale with base bet 10, max bet 1000
+```
+
+```
+Start a Fibonacci betting session with base unit 5
 ```
 
 ```
@@ -87,20 +108,78 @@ Record a win and tell me the next bet amount
 Check the current status
 ```
 
-#### Martingale Method
-```
-Start a Martingale session with base bet 10, max bet 1000, and max loss streak 7
-```
+## 🎯 Available Tools
 
-```
-Record a loss
-```
+Each betting method provides 4 MCP tools:
+- `{method}_init` - Initialize a new betting session
+- `{method}_record` - Record a win/loss and get the next bet amount
+- `{method}_status` - Check current state (bet amount, profit/loss, etc.)
+- `{method}_reset` - Reset the session to initial state
 
-```
-Check the Martingale status
-```
+### Method Names
+- `montecarlo` - Monte Carlo Method
+- `martingale` - Martingale Method
+- `labouchere` - Labouchere (Cancellation System)
+- `oscarsgrind` - Oscar's Grind
+- `cocomo` - Cocomo Method
+- `goodman` - Goodman (1-2-3-5)
+- `fibonacci` - Fibonacci Method
+- `paroli` - Paroli System
+- `dalembert` - D'Alembert Method
+- `percentage` - Fixed Percentage Betting
 
-## Development
+## 📖 Method Details
+
+### Monte Carlo Method
+
+Sequence-based betting strategy that manages bet amounts using a number sequence.
+
+**How it works:**
+1. Set an initial sequence (e.g., `[1, 2, 3]`)
+2. Bet amount = (first number + last number) × base unit
+3. **On win**: Remove first and last numbers from the sequence
+4. **On loss**: Add the lost bet amount (in units) to the end of the sequence
+5. Session completes when the sequence has 0 or 1 numbers
+
+### Martingale Method
+
+Doubles the bet amount after each loss. High risk strategy.
+
+**⚠️ Warning:** Bet amounts increase exponentially during losing streaks. Always set limits!
+
+### Labouchere (Cancellation System)
+
+Flexible sequence-based strategy where you can set your target profit.
+
+### Oscar's Grind
+
+Conservative system that increases bets only after wins, targeting small consistent profits.
+
+### Cocomo Method
+
+Fibonacci-style progression designed for 3x payout games.
+
+### Goodman (1-2-3-5)
+
+Fixed progression system: 1 → 2 → 3 → 5 units on consecutive wins.
+
+### Fibonacci Method
+
+Uses the Fibonacci sequence (1, 1, 2, 3, 5, 8, 13...) to determine bet amounts.
+
+### Paroli System (Reverse Martingale)
+
+Doubles bet on wins instead of losses. Less risky than Martingale.
+
+### D'Alembert Method
+
+Gradual progression: +1 unit on loss, -1 unit on win.
+
+### Fixed Percentage Betting
+
+Bet a fixed percentage of your bankroll (e.g., 10% of current bankroll).
+
+## 🛠️ Development
 
 ### Build
 
@@ -122,7 +201,7 @@ npm run dev
 
 ### Testing
 
-This project uses Vitest for testing.
+This project uses Vitest for testing with 234+ tests across 10 test files.
 
 ```bash
 # Run all tests
@@ -159,67 +238,33 @@ npm run format:check
 npm run check
 ```
 
-### Continuous Integration (CI)
-
-This project uses GitHub Actions for CI/CD:
-
-- **Code Quality Checks**: Linting and formatting checks on every PR
-- **Automated Testing**: Tests run automatically on every PR
-- **Multi-Version Support**: Tests run on Node.js 18, 20, and 22
-- **Build Verification**: TypeScript compilation is verified
-- **Coverage Reports**: Test coverage is tracked and uploaded as artifacts
-
-See [`.github/workflows/ci.yml`](.github/workflows/ci.yml) for details.
-
-## AI-Assisted Development
+## 🤖 AI-Assisted Development
 
 This project includes context files for various AI coding assistants:
 
 - **[CLAUDE.md](CLAUDE.md)** - Comprehensive context for Claude AI assistants
 - **[AGENT.md](AGENT.md)** - General context for any AI agent
-- **[.github/copilot-instructions.md](.github/copilot-instructions.md)** - GitHub Copilot specific instructions
-- **[.cursorrules](.cursorrules)** - Cursor/Codex AI rules
-
-These files provide:
-- Project architecture and design patterns
-- Code style and conventions
-- Testing guidelines
-- Common implementation patterns
-- Best practices and pitfalls to avoid
-
-### For AI Developers
-
-When working with AI assistants on this project, the context files help ensure:
-- Consistent code style (enforced by Biome)
-- Proper TypeScript patterns
-- Comprehensive test coverage
-- Correct MCP tool implementation
+- **[.github/copilot-instructions.md](.github/copilot-instructions.md)** - GitHub Copilot instructions
+- **[.cursorrules](.cursorrules)** - Cursor AI rules
 
 ### Claude Code Custom Command
 
-This project includes a custom command for automatically implementing new betting methods based on GitHub issues.
+This project includes a custom `/implement` command for automatically implementing new betting methods based on GitHub issues.
 
 **Usage:**
 ```
 /implement <issue_number>
 ```
 
-**Example:**
-```
-/implement 1
-```
-
-This will:
+This will automatically:
 1. Fetch the issue details from GitHub
-2. Generate the method implementation (`src/methods/{method}.ts`)
-3. Add the State interface to `src/types.ts`
-4. Register MCP tools in `src/index.ts`
-5. Create comprehensive tests (`src/methods/__tests__/{method}.test.ts`)
+2. Generate the method implementation
+3. Add the State interface
+4. Register MCP tools
+5. Create comprehensive tests
 6. Build and run tests
 
-The command reads the issue specification and automatically generates all necessary code with proper error handling, type safety, and test coverage.
-
-## Project Structure
+## 📁 Project Structure
 
 ```
 betting-method-mcp/
@@ -227,38 +272,26 @@ betting-method-mcp/
 │   ├── index.ts                    # MCP server entry point
 │   ├── types.ts                    # Common type definitions
 │   └── methods/
-│       ├── __tests__/              # Vitest test files
-│       │   ├── montecarlo.test.ts
-│       │   └── martingale.test.ts
-│       ├── montecarlo.ts           # Monte Carlo method implementation
-│       └── martingale.ts           # Martingale method implementation
-├── .claude/                        # Claude Code configuration
-│   ├── commands/
-│   │   └── implement.md            # Custom command for auto-implementation
-│   └── settings.local.json         # Local settings
-├── .docs/                          # Detailed specifications for each method (Japanese)
-│   ├── architecture.md             # Architecture design
-│   └── martingale.md               # Martingale method details
+│       ├── __tests__/              # Vitest test files (10 files)
+│       ├── montecarlo.ts
+│       ├── martingale.ts
+│       ├── labouchere.ts
+│       ├── oscarsgrind.ts
+│       ├── cocomo.ts
+│       ├── goodman.ts
+│       ├── fibonacci.ts
+│       ├── paroli.ts
+│       ├── dalembert.ts
+│       └── percentage.ts
+├── .docs/                          # Method specifications (Japanese)
 ├── build/                          # Compiled files
-├── vitest.config.ts                # Vitest configuration
-├── package.json
-├── tsconfig.json
-└── README.md
+└── ...
 ```
 
-## Future Enhancements
-
-The following betting methods are planned for addition:
-
-- **Paroli System** - Double bet on wins (reverse Martingale)
-- **D'Alembert System** - Gradual increase/decrease (+1 on loss, -1 on win)
-- **Labouchere System** - More flexible sequence-based strategy
-- **Fibonacci System** - Bet management using Fibonacci sequence
-
-## License
+## 📄 License
 
 MIT
 
-## Disclaimer
+## ⚠️ Disclaimer
 
-This tool is provided for educational and research purposes. Use in actual gambling is at your own risk. Betting strategies do not guarantee profits.
+This tool is provided for **educational and research purposes only**. Use in actual gambling is at your own risk. Betting strategies do not guarantee profits. Please gamble responsibly.
