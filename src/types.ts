@@ -48,3 +48,15 @@ export interface MartingaleState extends BettingMethodState {
   maxLossStreak: number;
   reachedLimit: boolean;
 }
+
+/**
+ * Cocomo method specific state
+ */
+export interface CocomoState extends BettingMethodState {
+  baseUnit: number;
+  previousBet: number;
+  currentStreak: number;
+  maxBet: number;
+  reachedLimit: boolean;
+  payoutMultiplier: number;
+}
