@@ -161,4 +161,27 @@ describe("MonteCarloMethod", () => {
       }).toThrow("No active session");
     });
   });
+
+  describe("edge cases - sequence length scenarios", () => {
+    it("should handle single element sequence correctly", () => {
+      monteCarlo.initSession(10);
+      monteCarlo.recordResult("win"); // [2] - single element
+      const state = monteCarlo.getState();
+
+      expect(state.sequence).toEqual([2]);
+      expect(state.currentBet).toBe(20); // single element: 2 * 10
+      expect(state.sessionActive).toBe(true);
+    });
+
+    it("should set bet to 0 when sequence is empty after session completion", () => {
+      monteCarlo.initSession(10);
+      monteCarlo.recordResult("win"); // [2]
+      monteCarlo.recordResult("win"); // [] - session complete
+      const state = monteCarlo.getState();
+
+      expect(state.sequence).toEqual([]);
+      expect(state.currentBet).toBe(0); // empty sequence: 0
+      expect(state.sessionActive).toBe(false);
+    });
+  });
 });
