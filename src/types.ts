@@ -5,7 +5,7 @@
 /**
  * Result of a bet (win or loss)
  */
-export type BetResult = "win" | "loss";
+export type BetResult = 'win' | 'loss';
 
 /**
  * Base interface for betting method state
