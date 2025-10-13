@@ -85,3 +85,13 @@ export interface OscarsGrindState extends BettingMethodState {
   currentProfitUnits: number;
   sessionsCompleted: number;
 }
+
+/**
+ * Paroli method specific state
+ */
+export interface ParoliState extends BettingMethodState {
+  baseUnit: number;
+  winStreak: number;
+  targetWinStreak: number;
+  cyclesCompleted: number;
+}
