@@ -1,4 +1,4 @@
-import type { MartingaleState, BetResult } from "../types.js";
+import type { BetResult, MartingaleState } from "../types.js";
 
 /**
  * Martingale betting method calculator
