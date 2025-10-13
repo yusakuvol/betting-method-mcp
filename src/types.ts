@@ -61,6 +61,18 @@ export interface GoodmanState extends BettingMethodState {
 }
 
 /**
+ * Cocomo method specific state
+ */
+export interface CocomoState extends BettingMethodState {
+  baseUnit: number;
+  previousBet: number;
+  currentStreak: number;
+  maxBet: number;
+  reachedLimit: boolean;
+  payoutMultiplier: number;
+}
+
+/**
  * Labouchere method specific state
  */
 export interface LabouchereState extends BettingMethodState {
