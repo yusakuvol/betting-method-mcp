@@ -61,3 +61,15 @@ export interface LabouchereState extends BettingMethodState {
   sessionsCompleted: number;
   reachedLimit: boolean;
 }
+
+/**
+ * Oscar's Grind method specific state
+ */
+export interface OscarsGrindState extends BettingMethodState {
+  baseUnit: number;
+  currentBetUnits: number;
+  maxBetUnits: number;
+  targetProfitUnits: number;
+  currentProfitUnits: number;
+  sessionsCompleted: number;
+}
