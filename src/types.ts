@@ -48,3 +48,14 @@ export interface MartingaleState extends BettingMethodState {
   maxLossStreak: number;
   reachedLimit: boolean;
 }
+
+/**
+ * Fibonacci method specific state
+ */
+export interface FibonacciState extends BettingMethodState {
+  baseUnit: number;
+  sequence: number[];
+  currentIndex: number;
+  maxIndex: number;
+  reachedLimit: boolean;
+}
