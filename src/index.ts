@@ -5,10 +5,12 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { MartingaleMethod } from "./methods/martingale.js";
 import { MonteCarloMethod } from "./methods/montecarlo.js";
+import { ParoliMethod } from "./methods/paroli.js";
 
 // Initialize method instances
 const monteCarlo = new MonteCarloMethod();
 const martingale = new MartingaleMethod();
+const paroli = new ParoliMethod();
 
 // Create MCP server
 const server = new Server(
@@ -129,6 +131,60 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: "martingale_reset",
         description: "Reset the current Martingale session to initial state",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
+        name: "paroli_init",
+        description:
+          "Initialize a new Paroli betting session with base unit and optional target win streak",
+        inputSchema: {
+          type: "object",
+          properties: {
+            baseUnit: {
+              type: "number",
+              description: "The base unit amount for betting (e.g., 1, 10, 100)",
+              minimum: 0.01,
+            },
+            targetWinStreak: {
+              type: "number",
+              description:
+                "Target number of consecutive wins before resetting (optional, default: 3)",
+              minimum: 1,
+            },
+          },
+          required: ["baseUnit"],
+        },
+      },
+      {
+        name: "paroli_record",
+        description: "Record a bet result (win or loss) and get the next bet amount",
+        inputSchema: {
+          type: "object",
+          properties: {
+            result: {
+              type: "string",
+              enum: ["win", "loss"],
+              description: "The result of the bet",
+            },
+          },
+          required: ["result"],
+        },
+      },
+      {
+        name: "paroli_status",
+        description:
+          "Get the current Paroli session status including current bet, win streak, and total profit",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
+        name: "paroli_reset",
+        description: "Reset the current Paroli session to initial state",
         inputSchema: {
           type: "object",
           properties: {},
@@ -325,6 +381,106 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case "martingale_reset": {
         martingale.reset();
         const state = martingale.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: "Session reset to initial state",
+                  baseUnit: state.baseUnit,
+                  currentBet: state.currentBet,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "paroli_init": {
+        const { baseUnit, targetWinStreak } = args as {
+          baseUnit: number;
+          targetWinStreak?: number;
+        };
+        paroli.initSession(baseUnit, targetWinStreak);
+        const state = paroli.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: "Paroli session initialized",
+                  baseUnit: state.baseUnit,
+                  currentBet: state.currentBet,
+                  targetWinStreak: state.targetWinStreak,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "paroli_record": {
+        const { result } = args as { result: "win" | "loss" };
+        paroli.recordResult(result);
+        const state = paroli.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: `Recorded ${result}`,
+                  currentBet: state.currentBet,
+                  winStreak: state.winStreak,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                  cyclesCompleted: state.cyclesCompleted,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "paroli_status": {
+        const state = paroli.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  baseUnit: state.baseUnit,
+                  currentBet: state.currentBet,
+                  winStreak: state.winStreak,
+                  targetWinStreak: state.targetWinStreak,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                  cyclesCompleted: state.cyclesCompleted,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "paroli_reset": {
+        paroli.reset();
+        const state = paroli.getState();
         return {
           content: [
             {

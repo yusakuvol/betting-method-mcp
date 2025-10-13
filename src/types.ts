@@ -48,3 +48,13 @@ export interface MartingaleState extends BettingMethodState {
   maxLossStreak: number;
   reachedLimit: boolean;
 }
+
+/**
+ * Paroli method specific state
+ */
+export interface ParoliState extends BettingMethodState {
+  baseUnit: number;
+  winStreak: number;
+  targetWinStreak: number;
+  cyclesCompleted: number;
+}
