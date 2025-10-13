@@ -1,5 +1,7 @@
 # Betting Method MCP Server
 
+![CI](https://github.com/yusakuvol/betting-method-mcp/actions/workflows/ci.yml/badge.svg)
+
 An MCP (Model Context Protocol) server that provides calculations for various betting methods. Can be used with Claude Desktop and other MCP-compatible applications.
 
 Currently supports **Monte Carlo Method** and **Martingale Method**. Additional betting methods such as Paroli, D'Alembert, and others are planned for future releases.
@@ -135,6 +137,17 @@ npm run test:ui
 # Run tests with coverage
 npm run test:coverage
 ```
+
+### Continuous Integration (CI)
+
+This project uses GitHub Actions for CI/CD:
+
+- **Automated Testing**: Tests run automatically on every PR
+- **Multi-Version Support**: Tests run on Node.js 18, 20, and 22
+- **Build Verification**: TypeScript compilation is verified
+- **Coverage Reports**: Test coverage is tracked and uploaded as artifacts
+
+See [`.github/workflows/ci.yml`](.github/workflows/ci.yml) for details.
 
 ### Claude Code Custom Command
 
