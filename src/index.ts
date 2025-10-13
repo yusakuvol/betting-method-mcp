@@ -4,6 +4,7 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { CocomoMethod } from "./methods/cocomo.js";
+import { DAlembertMethod } from "./methods/dalembert.js";
 import { FibonacciMethod } from "./methods/fibonacci.js";
 import { GoodmanMethod } from "./methods/goodman.js";
 import { LabouchereMethod } from "./methods/labouchere.js";
@@ -17,6 +18,7 @@ import { PercentageMethod } from "./methods/percentage.js";
 const monteCarlo = new MonteCarloMethod();
 const martingale = new MartingaleMethod();
 const cocomo = new CocomoMethod();
+const dalembert = new DAlembertMethod();
 const fibonacci = new FibonacciMethod();
 const goodman = new GoodmanMethod();
 const labouchere = new LabouchereMethod();
@@ -367,6 +369,59 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: "oscarsgrind_reset",
         description: "Reset the current Oscar's Grind session to initial state",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
+        name: "dalembert_init",
+        description:
+          "Initialize a new D'Alembert betting session with base unit and optional max bet limit",
+        inputSchema: {
+          type: "object",
+          properties: {
+            baseUnit: {
+              type: "number",
+              description: "The base unit amount for betting (e.g., 1, 10, 100)",
+              minimum: 0.01,
+            },
+            maxBet: {
+              type: "number",
+              description: "Maximum bet amount (optional)",
+              minimum: 0.01,
+            },
+          },
+          required: ["baseUnit"],
+        },
+      },
+      {
+        name: "dalembert_record",
+        description: "Record a bet result (win or loss) and get the next bet amount",
+        inputSchema: {
+          type: "object",
+          properties: {
+            result: {
+              type: "string",
+              enum: ["win", "loss"],
+              description: "The result of the bet",
+            },
+          },
+          required: ["result"],
+        },
+      },
+      {
+        name: "dalembert_status",
+        description:
+          "Get the current D'Alembert session status including current bet and total profit",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
+        name: "dalembert_reset",
+        description: "Reset the current D'Alembert session to initial state",
         inputSchema: {
           type: "object",
           properties: {},
@@ -1168,6 +1223,105 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                   totalProfit: state.totalProfit,
                   sessionActive: state.sessionActive,
                   sessionsCompleted: state.sessionsCompleted,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "dalembert_init": {
+        const { baseUnit, maxBet } = args as {
+          baseUnit: number;
+          maxBet?: number;
+        };
+        dalembert.initSession(baseUnit, maxBet);
+        const state = dalembert.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: "D'Alembert session initialized",
+                  baseUnit: state.baseUnit,
+                  currentBet: state.currentBet,
+                  maxBet: state.maxBet,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "dalembert_record": {
+        const { result } = args as { result: "win" | "loss" };
+        dalembert.recordResult(result);
+        const state = dalembert.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: `Recorded ${result}`,
+                  currentBet: state.currentBet,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                  reachedLimit: state.reachedLimit,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "dalembert_status": {
+        const state = dalembert.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  baseUnit: state.baseUnit,
+                  currentBet: state.currentBet,
+                  maxBet: state.maxBet,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                  reachedLimit: state.reachedLimit,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "dalembert_reset": {
+        dalembert.reset();
+        const state = dalembert.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: "Session reset to initial state",
+                  baseUnit: state.baseUnit,
+                  currentBet: state.currentBet,
+                  maxBet: state.maxBet,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
                 },
                 null,
                 2,

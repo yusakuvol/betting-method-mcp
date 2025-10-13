@@ -98,6 +98,15 @@ export interface OscarsGrindState extends BettingMethodState {
 }
 
 /**
+ * D'Alembert method specific state
+ */
+export interface DAlembertState extends BettingMethodState {
+  baseUnit: number;
+  maxBet?: number;
+  reachedLimit: boolean;
+}
+
+/**
  * Fibonacci method specific state
  */
 export interface FibonacciState extends BettingMethodState {
