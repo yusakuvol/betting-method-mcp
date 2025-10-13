@@ -1,4 +1,4 @@
-import { MonteCarloState, BetResult } from "../types.js";
+import type { MonteCarloState, BetResult } from "../types.js";
 
 /**
  * Monte Carlo betting method calculator
@@ -80,10 +80,7 @@ export class MonteCarloMethod {
 
     // Calculate next bet
     if (this.state.sessionActive && this.state.sequence.length > 0) {
-      this.state.currentBet = this.calculateBet(
-        this.state.sequence,
-        this.state.baseUnit
-      );
+      this.state.currentBet = this.calculateBet(this.state.sequence, this.state.baseUnit);
     } else {
       this.state.currentBet = 0;
     }

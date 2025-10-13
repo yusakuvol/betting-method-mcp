@@ -1,4 +1,4 @@
-import { MartingaleState, BetResult } from "../types.js";
+import type { MartingaleState, BetResult } from "../types.js";
 
 /**
  * Martingale betting method calculator
@@ -28,11 +28,7 @@ export class MartingaleMethod {
   /**
    * Initialize a new betting session
    */
-  initSession(
-    baseUnit: number,
-    maxBet?: number,
-    maxLossStreak?: number
-  ): void {
+  initSession(baseUnit: number, maxBet?: number, maxLossStreak?: number): void {
     if (baseUnit <= 0) {
       throw new Error("baseUnit must be positive");
     }

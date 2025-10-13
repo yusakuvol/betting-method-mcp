@@ -2,10 +2,7 @@
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-} from "@modelcontextprotocol/sdk/types.js";
+import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { MonteCarloMethod } from "./methods/montecarlo.js";
 import { MartingaleMethod } from "./methods/martingale.js";
 
@@ -23,7 +20,7 @@ const server = new Server(
     capabilities: {
       tools: {},
     },
-  }
+  },
 );
 
 /**
@@ -34,8 +31,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     tools: [
       {
         name: "montecarlo_init",
-        description:
-          "Initialize a new Monte Carlo betting session with a base unit amount",
+        description: "Initialize a new Monte Carlo betting session with a base unit amount",
         inputSchema: {
           type: "object",
           properties: {
@@ -50,8 +46,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "montecarlo_record",
-        description:
-          "Record a bet result (win or loss) and get the next bet amount",
+        description: "Record a bet result (win or loss) and get the next bet amount",
         inputSchema: {
           type: "object",
           properties: {
@@ -95,14 +90,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
             maxBet: {
               type: "number",
-              description:
-                "Maximum bet amount (optional, default: baseUnit × 1024)",
+              description: "Maximum bet amount (optional, default: baseUnit × 1024)",
               minimum: 0.01,
             },
             maxLossStreak: {
               type: "number",
-              description:
-                "Maximum consecutive losses before session ends (optional, default: 10)",
+              description: "Maximum consecutive losses before session ends (optional, default: 10)",
               minimum: 1,
             },
           },
@@ -111,8 +104,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "martingale_record",
-        description:
-          "Record a bet result (win or loss) and get the next bet amount",
+        description: "Record a bet result (win or loss) and get the next bet amount",
         inputSchema: {
           type: "object",
           properties: {
@@ -172,7 +164,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                   sessionActive: state.sessionActive,
                 },
                 null,
-                2
+                2,
               ),
             },
           ],
@@ -197,7 +189,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                   sessionComplete: !state.sessionActive,
                 },
                 null,
-                2
+                2,
               ),
             },
           ],
@@ -219,7 +211,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                   sessionActive: state.sessionActive,
                 },
                 null,
-                2
+                2,
               ),
             },
           ],
@@ -243,7 +235,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                   sessionActive: state.sessionActive,
                 },
                 null,
-                2
+                2,
               ),
             },
           ],
@@ -273,7 +265,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                   sessionActive: state.sessionActive,
                 },
                 null,
-                2
+                2,
               ),
             },
           ],
@@ -298,7 +290,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                   reachedLimit: state.reachedLimit,
                 },
                 null,
-                2
+                2,
               ),
             },
           ],
@@ -323,7 +315,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                   reachedLimit: state.reachedLimit,
                 },
                 null,
-                2
+                2,
               ),
             },
           ],
@@ -346,7 +338,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                   sessionActive: state.sessionActive,
                 },
                 null,
-                2
+                2,
               ),
             },
           ],
@@ -357,8 +349,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         throw new Error(`Unknown tool: ${name}`);
     }
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return {
       content: [
         {
