@@ -2,6 +2,7 @@
 
 ![CI](https://github.com/yusakuvol/betting-method-mcp/actions/workflows/ci.yml/badge.svg)
 [![npm version](https://badge.fury.io/js/betting-method-mcp.svg)](https://www.npmjs.com/package/betting-method-mcp)
+![Dependabot](https://img.shields.io/badge/Dependabot-enabled-success)
 
 An MCP (Model Context Protocol) server that provides calculations for various betting methods. Can be used with Claude Desktop and other MCP-compatible applications.
 
