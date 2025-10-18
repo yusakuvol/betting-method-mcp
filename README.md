@@ -180,6 +180,31 @@ Gradual progression: +1 unit on loss, -1 unit on win.
 
 Bet a fixed percentage of your bankroll (e.g., 10% of current bankroll).
 
+## 🤝 Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
+### Quick Start for Contributors
+
+1. Fork the repository
+2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/betting-method-mcp.git`
+3. Install dependencies: `npm install`
+4. Create a branch: `git checkout -b feature/your-feature-name`
+5. Make your changes and add tests
+6. Ensure all checks pass: `npm run build && npm test && npm run check`
+7. Commit following [Conventional Commits](https://www.conventionalcommits.org/)
+8. Push and create a Pull Request
+
+### Issue Templates
+
+When reporting issues or suggesting features, please use the appropriate template:
+
+- **Bug Report**: For reporting bugs or unexpected behavior
+- **Feature Request**: For suggesting new features or improvements
+- **Betting Method**: For proposing new betting strategies
+
+See our [Issue Templates](.github/ISSUE_TEMPLATE/) for more details.
+
 ## 🛠️ Development
 
 ### Build

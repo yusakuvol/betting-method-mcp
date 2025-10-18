@@ -1,0 +1,69 @@
+name: 機能要望
+description: 新しい機能や改善の提案
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        機能要望ありがとうございます！提案内容を詳しく教えてください。
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 解決したい課題
+      description: どのような問題を解決したいですか？または、どのような機能があれば便利ですか？
+      placeholder: 現在、複数のセッションを同時に管理できない
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 提案する解決策
+      description: どのように実装すべきだと思いますか？具体的なアイデアがあれば記載してください
+      placeholder: |
+        セッションIDを導入し、複数のベッティングメソッドを同時に管理できるようにする
+        - session_idパラメータを追加
+        - セッション情報を保存する仕組みを追加
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 代替案
+      description: 他に考えられる方法はありますか？
+      placeholder: 別のアプローチや既存の類似機能など
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: カテゴリ
+      description: どのカテゴリに該当しますか？
+      options:
+        - 新しいベッティングメソッド
+        - 既存メソッドの改善
+        - 分析・統計機能
+        - ドキュメント
+        - 開発者体験
+        - パフォーマンス
+        - その他
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 優先度（主観的な評価）
+      description: あなたにとってこの機能はどれくらい重要ですか？
+      options:
+        - 高 - 非常に重要
+        - 中 - あると便利
+        - 低 - あればいいな程度
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 追加情報
+      description: その他、参考になる情報があれば記載してください（参考資料、類似プロジェクト、具体的なユースケースなど）
