@@ -1,0 +1,101 @@
+name: 新しいベッティングメソッドの提案
+description: 実装してほしいベッティング戦略を提案
+title: "[Method]: "
+labels: ["enhancement", "betting-method", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        新しいベッティングメソッドの提案ありがとうございます！
+        詳細な情報をご提供いただくと、実装がスムーズになります。
+
+  - type: input
+    id: name
+    attributes:
+      label: メソッド名
+      description: ベッティングメソッドの名前（日本語・英語どちらでも可）
+      placeholder: "Kelly Criterion (ケリー基準)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 説明
+      description: この賭け方法の概要と特徴を説明してください
+      placeholder: |
+        Kelly Criterionは、期待値とオッズから最適なベット額を数学的に導出する方法です。
+        長期的に資金を最大化することを目的としています。
+    validations:
+      required: true
+
+  - type: textarea
+    id: rules
+    attributes:
+      label: ルール・計算式
+      description: 具体的なベット額の決定ルールや計算式を記載してください
+      placeholder: |
+        - 初期ベット: (勝率 × オッズ - 1) / (オッズ - 1) × バンクロール
+        - 勝ったとき: 再計算して次のベット額を決定
+        - 負けたとき: 再計算して次のベット額を決定
+        - バンクロールが変動するたびにベット額を再計算
+    validations:
+      required: true
+
+  - type: dropdown
+    id: risk_level
+    attributes:
+      label: リスクレベル
+      description: このメソッドのリスクレベルはどれくらいですか？
+      options:
+        - 低リスク（保守的）
+        - 中リスク（バランス型）
+        - 高リスク（攻撃的）
+        - 不明
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: 実装の複雑さ（見積もり）
+      description: 実装の複雑さはどの程度だと思いますか？
+      options:
+        - 簡単（既存メソッドと似ている）
+        - 中程度（新しいロジックが必要）
+        - 複雑（特殊な計算や状態管理が必要）
+        - 不明
+
+  - type: textarea
+    id: reference
+    attributes:
+      label: 参考資料
+      description: 参考になるURL、書籍、論文、記事などがあれば記載してください
+      placeholder: |
+        - Wikipedia: https://en.wikipedia.org/wiki/Kelly_criterion
+        - 論文: "A New Interpretation of Information Rate" by J. L. Kelly Jr.
+        - 書籍: 「Fortune's Formula」by William Poundstone
+
+  - type: textarea
+    id: use_case
+    attributes:
+      label: ユースケース
+      description: どのような場面で使用することを想定していますか？
+      placeholder: |
+        スポーツベッティングで勝率とオッズが明確な場合に使用。
+        資金管理を数学的に最適化したい場合に適している。
+
+  - type: textarea
+    id: parameters
+    attributes:
+      label: 必要なパラメータ
+      description: 初期化時にどのようなパラメータが必要だと思いますか？
+      placeholder: |
+        - bankroll: 現在の資金
+        - winProbability: 勝率（0-1の範囲）
+        - odds: オッズ（例: 2.0なら2倍配当）
+        - fractionKelly: フルケリーか分数ケリーか（オプション）
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 追加情報
+      description: その他、実装に役立つ情報があれば記載してください

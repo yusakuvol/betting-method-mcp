@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 質問・ディスカッション
+    url: https://github.com/yusakuvol/betting-method-mcp/discussions
+    about: 一般的な質問や議論はDiscussionsでお願いします
+  - name: セキュリティ脆弱性報告
+    url: https://github.com/yusakuvol/betting-method-mcp/security/advisories/new
+    about: セキュリティに関する問題はこちらから報告してください

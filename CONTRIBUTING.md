@@ -223,9 +223,23 @@ git commit -m "test: Add edge cases for Monte Carlo method"
 
 When creating issues, please use the appropriate template:
 
-- **Bug Report**: For reporting bugs or unexpected behavior
-- **Feature Request**: For suggesting new features
-- **Betting Method**: For proposing new betting strategies
+- **Bug Report** ([bug_report.yml](.github/ISSUE_TEMPLATE/bug_report.yml)): For reporting bugs or unexpected behavior
+  - 問題の説明、再現手順、期待される動作など
+  - 該当するベッティングメソッドを選択
+  - エラーログや環境情報を提供
+
+- **Feature Request** ([feature_request.yml](.github/ISSUE_TEMPLATE/feature_request.yml)): For suggesting new features or improvements
+  - 解決したい課題や提案する機能
+  - カテゴリと優先度の選択
+  - 代替案や追加情報
+
+- **Betting Method** ([betting_method.yml](.github/ISSUE_TEMPLATE/betting_method.yml)): For proposing new betting strategies
+  - メソッド名と説明
+  - ルール・計算式の詳細
+  - リスクレベルと実装の複雑さ
+  - 参考資料やユースケース
+
+その他の質問や議論は [Discussions](https://github.com/yusakuvol/betting-method-mcp/discussions) をご利用ください。
 
 ## Project Structure
 

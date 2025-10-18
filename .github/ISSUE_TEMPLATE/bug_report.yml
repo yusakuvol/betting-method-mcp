@@ -1,0 +1,94 @@
+name: バグ報告
+description: バグや予期しない動作を報告する
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        バグ報告ありがとうございます！問題の特定と修正に役立つ情報をご提供ください。
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 問題の説明
+      description: どのような問題が発生していますか？
+      placeholder: Monte Carlo法でエラーが発生する
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      description: 問題を再現するための手順を詳しく記載してください
+      placeholder: |
+        1. montecarlo_initを実行
+        2. montecarlo_recordで勝利を記録
+        3. エラーが発生
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待される動作
+      description: 本来どうあるべきか説明してください
+      placeholder: 次のベット額が正しく計算される
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 実際の動作
+      description: 実際に何が起きたか説明してください
+      placeholder: エラーが発生してセッションが停止する
+
+  - type: input
+    id: version
+    attributes:
+      label: バージョン
+      description: betting-method-mcpのバージョン
+      placeholder: "0.1.0"
+
+  - type: dropdown
+    id: method
+    attributes:
+      label: 該当する賭け方法
+      description: どのベッティングメソッドで問題が発生しましたか？
+      options:
+        - Monte Carlo
+        - Martingale
+        - Labouchere
+        - Oscar's Grind
+        - Cocomo
+        - Goodman
+        - Fibonacci
+        - Paroli
+        - D'Alembert
+        - Percentage
+        - すべて
+        - その他
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: エラーログ
+      description: エラーメッセージやログがあれば貼り付けてください
+      render: shell
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: 実行環境
+      description: どの環境で使用していますか？
+      options:
+        - Claude Desktop
+        - npx実行
+        - ローカルビルド
+        - その他
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 追加情報
+      description: その他、問題の特定に役立つ情報があれば記載してください
