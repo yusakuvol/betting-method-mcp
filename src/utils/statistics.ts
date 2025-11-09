@@ -89,8 +89,9 @@ export function updateStreak(currentStreak: number, result: BetResult): number {
 
 /**
  * Initialize empty statistics
+ * @param enableHistory Enable history tracking (betHistory, outcomeHistory)
  */
-export function initializeStatistics(): SessionStatistics {
+export function initializeStatistics(enableHistory: boolean = true): SessionStatistics {
   return {
     totalGames: 0,
     totalWins: 0,
@@ -106,6 +107,8 @@ export function initializeStatistics(): SessionStatistics {
     averageBet: 0,
     minBet: Infinity,
     maxBet: 0,
+    betHistory: enableHistory ? [] : undefined,
+    outcomeHistory: enableHistory ? [] : undefined,
   };
 }
 
