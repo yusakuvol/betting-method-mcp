@@ -95,6 +95,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         },
       },
       {
+        name: "montecarlo_statistics",
+        description:
+          "Get detailed statistics for the current Monte Carlo session including win rate, ROI, streaks, and risk metrics",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
         name: "martingale_init",
         description:
           "Initialize a new Martingale betting session with base unit and optional limits",
@@ -773,6 +782,70 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                   currentBet: state.currentBet,
                   totalProfit: state.totalProfit,
                   sessionActive: state.sessionActive,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "montecarlo_statistics": {
+        const stats = monteCarlo.getStatistics();
+        if (!stats) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(
+                  {
+                    message: "No statistics available. Please initialize a session first.",
+                  },
+                  null,
+                  2,
+                ),
+              },
+            ],
+          };
+        }
+        const { generateSummary } = await import("./utils/statistics.js").then((m) => m);
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  basic: {
+                    totalGames: stats.totalGames,
+                    winRate: stats.winRate,
+                    netProfit: stats.netProfit,
+                    roi: stats.roi,
+                  },
+                  streaks: {
+                    current: stats.currentStreak,
+                    maxWin: stats.maxWinStreak,
+                    maxLoss: stats.maxLossStreak,
+                  },
+                  financial: {
+                    totalWagered: stats.totalWagered,
+                    totalReturned: stats.totalReturned,
+                    netProfit: stats.netProfit,
+                    roi: stats.roi,
+                  },
+                  betAmounts: {
+                    average: stats.averageBet,
+                    min: stats.minBet === Infinity ? 0 : stats.minBet,
+                    max: stats.maxBet,
+                  },
+                  risk:
+                    stats.volatility !== undefined || stats.sharpeRatio !== undefined
+                      ? {
+                          volatility: stats.volatility,
+                          sharpeRatio: stats.sharpeRatio,
+                        }
+                      : undefined,
+                  summary: generateSummary(stats),
                 },
                 null,
                 2,

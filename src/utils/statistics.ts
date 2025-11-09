@@ -89,8 +89,9 @@ export function updateStreak(currentStreak: number, result: BetResult): number {
 
 /**
  * Initialize empty statistics
+ * @param enableHistory Enable history tracking (betHistory, outcomeHistory)
  */
-export function initializeStatistics(): SessionStatistics {
+export function initializeStatistics(enableHistory: boolean = true): SessionStatistics {
   return {
     totalGames: 0,
     totalWins: 0,
@@ -106,6 +107,8 @@ export function initializeStatistics(): SessionStatistics {
     averageBet: 0,
     minBet: Infinity,
     maxBet: 0,
+    betHistory: enableHistory ? [] : undefined,
+    outcomeHistory: enableHistory ? [] : undefined,
   };
 }
 
@@ -187,9 +190,8 @@ export function updateBankrollStatistics(
     newStats.peakBankroll = Math.max(newStats.peakBankroll, currentBankroll);
     newStats.lowestBankroll = Math.min(newStats.lowestBankroll ?? currentBankroll, currentBankroll);
 
-    if (newStats.bankrollHistory.length > 0) {
-      newStats.drawdown = calculateDrawdown(newStats.bankrollHistory);
-    }
+    // bankrollHistory always has at least one entry after adding above
+    newStats.drawdown = calculateDrawdown(newStats.bankrollHistory);
   }
 
   return newStats;

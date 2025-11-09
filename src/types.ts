@@ -55,6 +55,7 @@ export interface BettingMethodState {
   currentBet: number;
   totalProfit: number;
   sessionActive: boolean;
+  statistics?: SessionStatistics;
 }
 
 /**

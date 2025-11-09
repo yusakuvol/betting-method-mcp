@@ -1,4 +1,10 @@
-import type { BetResult, MonteCarloState } from "../types.js";
+import type { BetResult, MonteCarloState, SessionStatistics } from "../types.js";
+import {
+  initializeStatistics,
+  updateStatistics,
+  calculateRiskMetrics,
+  generateSummary,
+} from "../utils/statistics.js";
 
 /**
  * Monte Carlo betting method calculator
@@ -33,6 +39,7 @@ export class MonteCarloMethod {
       currentBet: this.calculateBet([1, 2, 3], baseUnit),
       totalProfit: 0,
       sessionActive: true,
+      statistics: initializeStatistics(),
     };
   }
 
@@ -56,6 +63,18 @@ export class MonteCarloMethod {
     }
 
     const currentBetAmount = this.state.currentBet;
+
+    // Update statistics
+    if (!this.state.statistics) {
+      this.state.statistics = initializeStatistics();
+    }
+    const payout = result === "win" ? currentBetAmount * 2 : 0; // 2x payout for win
+    this.state.statistics = updateStatistics(
+      this.state.statistics,
+      currentBetAmount,
+      result,
+      payout,
+    );
 
     if (result === "win") {
       // Update profit
@@ -84,6 +103,9 @@ export class MonteCarloMethod {
     } else {
       this.state.currentBet = 0;
     }
+
+    // Update risk metrics
+    this.state.statistics = calculateRiskMetrics(this.state.statistics);
   }
 
   /**
@@ -93,6 +115,27 @@ export class MonteCarloMethod {
     return {
       ...this.state,
       sequence: [...this.state.sequence], // Deep copy of array
+    };
+  }
+
+  /**
+   * Get statistics for the current session
+   */
+  getStatistics(): SessionStatistics | undefined {
+    if (!this.state.statistics) {
+      return undefined;
+    }
+    return {
+      ...this.state.statistics,
+      betHistory: this.state.statistics.betHistory
+        ? [...this.state.statistics.betHistory]
+        : undefined,
+      outcomeHistory: this.state.statistics.outcomeHistory
+        ? [...this.state.statistics.outcomeHistory]
+        : undefined,
+      bankrollHistory: this.state.statistics.bankrollHistory
+        ? [...this.state.statistics.bankrollHistory]
+        : undefined,
     };
   }
 
