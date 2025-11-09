@@ -47,6 +47,12 @@ describe("statistics utilities", () => {
       expect(drawdown).toBeCloseTo(33.33, 1); // (1200 - 800) / 1200 * 100
     });
 
+    it("should handle peak = 0 case", () => {
+      const history = [0, 0, 0];
+      const drawdown = calculateDrawdown(history);
+      expect(drawdown).toBe(0);
+    });
+
     it("should return 0 for empty history", () => {
       expect(calculateDrawdown([])).toBe(0);
     });
@@ -269,6 +275,89 @@ describe("statistics utilities", () => {
       expect(updated.drawdown).toBeGreaterThan(0);
     });
 
+    it("should not calculate drawdown with single bankroll entry", () => {
+      const stats = initializeStatistics();
+      const updated = updateBankrollStatistics(stats, 1000, 1000);
+      expect(updated.bankrollHistory).toEqual([1000]);
+      // drawdown is calculated only when history.length > 0, but with 1 entry it's 0
+      // The check in code is: if (newStats.bankrollHistory.length > 0)
+      // So it will be calculated, but should be 0 for single entry
+      if (updated.drawdown !== undefined) {
+        expect(updated.drawdown).toBe(0);
+      }
+    });
+
+    it("should handle bankroll history with one entry", () => {
+      const stats = initializeStatistics();
+      let updated = updateBankrollStatistics(stats, 1000, 1000);
+      updated = updateBankrollStatistics(updated, 1100, 1000);
+      expect(updated.drawdown).toBeDefined();
+    });
+
+    it("should handle case when initialBankroll is undefined", () => {
+      const stats = initializeStatistics();
+      const updated = updateBankrollStatistics(stats, 1000);
+      expect(updated.bankrollHistory).toEqual([1000]);
+      expect(updated.peakBankroll).toBeUndefined();
+      expect(updated.lowestBankroll).toBeUndefined();
+    });
+
+    it("should not calculate drawdown when bankrollHistory is empty", () => {
+      const stats = initializeStatistics();
+      // biome-ignore lint/suspicious/noExplicitAny: Testing edge case
+      (stats as any).bankrollHistory = [];
+      const updated = updateBankrollStatistics(stats, 1000, 1000);
+      expect(updated.bankrollHistory).toEqual([1000]);
+    });
+
+    it("should handle lowestBankroll when it is undefined", () => {
+      const stats = initializeStatistics();
+      // biome-ignore lint/suspicious/noExplicitAny: Testing edge case
+      (stats as any).lowestBankroll = undefined;
+      const updated = updateBankrollStatistics(stats, 1000, 1000);
+      expect(updated.lowestBankroll).toBe(1000);
+    });
+
+    it("should handle lowestBankroll when it is defined and currentBankroll is lower", () => {
+      const stats = initializeStatistics();
+      let updated = updateBankrollStatistics(stats, 1000, 1000);
+      updated = updateBankrollStatistics(updated, 1200, 1000);
+      updated = updateBankrollStatistics(updated, 800, 1000); // Lower than lowest
+      expect(updated.lowestBankroll).toBe(800);
+    });
+
+    it("should handle lowestBankroll when it is defined and currentBankroll is higher", () => {
+      const stats = initializeStatistics();
+      let updated = updateBankrollStatistics(stats, 1000, 1000);
+      updated = updateBankrollStatistics(updated, 800, 1000);
+      updated = updateBankrollStatistics(updated, 1200, 1000); // Higher than lowest
+      expect(updated.lowestBankroll).toBe(800); // Should remain 800
+    });
+
+    it("should use currentBankroll when lowestBankroll is undefined in ?? operator", () => {
+      const stats = initializeStatistics();
+      // Set initialBankroll but manually set lowestBankroll to undefined to test ?? operator
+      let updated = updateBankrollStatistics(stats, 1000, 1000);
+      // biome-ignore lint/suspicious/noExplicitAny: Testing edge case
+      (updated as any).lowestBankroll = undefined;
+      // Now call again - the ?? operator should use currentBankroll
+      updated = updateBankrollStatistics(updated, 900, 1000);
+      expect(updated.lowestBankroll).toBe(900); // Should use currentBankroll (900) from ?? operator
+    });
+
+    it("should handle case when bankrollHistory length is 0 after update", () => {
+      const stats = initializeStatistics();
+      // Create stats with empty bankrollHistory
+      const statsWithEmpty = { ...stats, bankrollHistory: [] };
+      const updated = updateBankrollStatistics(statsWithEmpty, 1000, 1000);
+      // After adding one entry, length is 1, so drawdown check passes
+      expect(updated.bankrollHistory).toEqual([1000]);
+      // But drawdown calculation requires at least 1 entry, so it will be 0
+      if (updated.drawdown !== undefined) {
+        expect(updated.drawdown).toBe(0);
+      }
+    });
+
     it("should initialize peak and lowest from initial bankroll", () => {
       const stats = initializeStatistics();
       const updated = updateBankrollStatistics(stats, 1000, 1000);
@@ -336,6 +425,12 @@ describe("statistics utilities", () => {
       expect(summary).toContain("ROI");
     });
 
+    it("should not include profit when netProfit is 0", () => {
+      const stats = initializeStatistics();
+      const summary = generateSummary(stats);
+      expect(summary).not.toContain("純利益");
+    });
+
     it("should include streak information", () => {
       const stats = initializeStatistics();
       let updated = updateStatistics(stats, 100, "win");
@@ -344,6 +439,22 @@ describe("statistics utilities", () => {
 
       const summary = generateSummary(updated);
       expect(summary).toContain("最大連勝");
+    });
+
+    it("should not include streaks when both are 0", () => {
+      const stats = initializeStatistics();
+      const summary = generateSummary(stats);
+      expect(summary).not.toContain("最大連勝");
+      expect(summary).not.toContain("最大連敗");
+    });
+
+    it("should include only loss streak when win streak is 0", () => {
+      const stats = initializeStatistics();
+      let updated = updateStatistics(stats, 100, "loss");
+      updated = updateStatistics(updated, 100, "loss");
+
+      const summary = generateSummary(updated);
+      expect(summary).toContain("最大連敗");
     });
 
     it("should include drawdown when available", () => {

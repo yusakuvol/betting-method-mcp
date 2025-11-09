@@ -190,9 +190,8 @@ export function updateBankrollStatistics(
     newStats.peakBankroll = Math.max(newStats.peakBankroll, currentBankroll);
     newStats.lowestBankroll = Math.min(newStats.lowestBankroll ?? currentBankroll, currentBankroll);
 
-    if (newStats.bankrollHistory.length > 0) {
-      newStats.drawdown = calculateDrawdown(newStats.bankrollHistory);
-    }
+    // bankrollHistory always has at least one entry after adding above
+    newStats.drawdown = calculateDrawdown(newStats.bankrollHistory);
   }
 
   return newStats;
