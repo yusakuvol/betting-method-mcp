@@ -165,7 +165,9 @@ it("should recover all losses plus initial bet on win after losses", () => {
 
 4. **Write Tests** (`src/methods/__tests__/{method}.test.ts`)
    - Cover all scenarios
-   - Aim for 80%+ coverage
+   - **MUST achieve 100% test coverage** (statements, branches, functions, lines)
+   - Run `npm run test:coverage` to verify before committing
+   - CI will fail if coverage is below 100%
 
 5. **Update Documentation**
    - Add to README.md
@@ -245,7 +247,19 @@ npm run check           # Lint + format check
 ### Before Committing
 1. Run `npm run build` - ensure no TypeScript errors
 2. Run `npm test` - all tests must pass
-3. Run `npm run check` - lint and format checks must pass
+3. Run `npm run test:coverage` - **verify 100% test coverage**
+4. Run `npm run check` - lint and format checks must pass
+
+**⚠️ CRITICAL: Test coverage must be 100%**
+- Statements: 100%
+- Branches: 100%
+- Functions: 100%
+- Lines: 100%
+
+If coverage drops below 100%, the CI will fail. Common fixes:
+- Remove unreachable code paths (e.g., unnecessary ternary operators)
+- Add tests for all error conditions
+- Test both branches of conditional statements
 
 ## Important Design Decisions
 

@@ -81,6 +81,38 @@ npm run test:ui
 npm run test:coverage
 ```
 
+#### Test Coverage Requirements
+
+**⚠️ Important: All code must maintain 100% test coverage.**
+
+Before submitting a PR, you must verify that your changes maintain 100% coverage:
+
+```bash
+# Run tests with coverage
+npm run test:coverage
+
+# Check the output - it should show:
+# - All files: 100% coverage for statements, branches, functions, and lines
+# - No ERROR messages about coverage thresholds
+```
+
+**Coverage Threshold:**
+- Statements: 100%
+- Branches: 100%
+- Functions: 100%
+- Lines: 100%
+
+If coverage drops below 100%, the CI will fail. Common issues:
+- Unreachable code paths (remove unnecessary conditionals)
+- Missing edge case tests
+- Unused error handling branches
+
+**Tips for maintaining 100% coverage:**
+1. Write tests for all error conditions
+2. Test both branches of conditional statements
+3. Remove dead code or unreachable paths
+4. Use `npm run test:coverage` locally before pushing
+
 ## Code Style
 
 ### TypeScript Guidelines
@@ -193,9 +225,10 @@ git commit -m "test: Add edge cases for Monte Carlo method"
 
 3. **Ensure all checks pass**
    ```bash
-   npm run build  # TypeScript compilation
-   npm test       # All tests pass
-   npm run check  # Lint and format checks
+   npm run build         # TypeScript compilation
+   npm test              # All tests pass
+   npm run test:coverage # Verify 100% test coverage
+   npm run check         # Lint and format checks
    ```
 
 4. **Commit your changes**
@@ -212,8 +245,10 @@ git commit -m "test: Add edge cases for Monte Carlo method"
 
 6. **Wait for CI checks**
    - All tests must pass
-   - Code coverage should not decrease
+   - **Code coverage must remain at 100%** (statements, branches, functions, lines)
    - Lint/format checks must pass
+   
+   **Note:** If the Coverage Report check fails, run `npm run test:coverage` locally to identify which lines are not covered and add appropriate tests.
 
 7. **Address review feedback**
    - Make requested changes

@@ -8,6 +8,47 @@
 export type BetResult = "win" | "loss";
 
 /**
+ * Session statistics for betting methods
+ */
+export interface SessionStatistics {
+  // Basic statistics
+  totalGames: number;
+  totalWins: number;
+  totalLosses: number;
+  winRate: number;
+
+  // Streaks
+  currentStreak: number; // Positive: winning streak, Negative: losing streak
+  maxWinStreak: number;
+  maxLossStreak: number;
+
+  // Financial
+  totalWagered: number; // Total amount bet
+  totalReturned: number; // Total amount returned (wins)
+  netProfit: number; // Net profit (totalReturned - totalWagered)
+  roi: number; // Return on Investment (%)
+
+  // Bet amount statistics
+  averageBet: number;
+  minBet: number;
+  maxBet: number;
+
+  // Bankroll statistics (optional, for methods with bankroll)
+  peakBankroll?: number;
+  lowestBankroll?: number;
+  drawdown?: number; // Maximum drawdown (%)
+
+  // Risk metrics (optional)
+  volatility?: number; // Standard deviation of bet amounts
+  sharpeRatio?: number; // Sharpe ratio (risk-adjusted return)
+
+  // History (optional, for detailed analysis)
+  betHistory?: number[]; // Bet amount history
+  bankrollHistory?: number[]; // Bankroll history
+  outcomeHistory?: BetResult[]; // Win/loss history
+}
+
+/**
  * Base interface for betting method state
  */
 export interface BettingMethodState {
@@ -138,4 +179,22 @@ export interface PercentageState extends BettingMethodState {
   totalWins: number;
   totalLosses: number;
   profitPercentage: number;
+}
+
+/**
+ * Kelly Criterion method specific state
+ */
+export interface KellyCriterionState extends BettingMethodState {
+  currentBankroll: number;
+  initialBankroll: number;
+  winProbability: number;
+  payoutOdds: number;
+  kellyPercentage: number;
+  fractionalKelly: number;
+  minBet: number;
+  maxBet?: number;
+  totalWins: number;
+  totalLosses: number;
+  actualWinRate: number;
+  bankrollHistory: number[];
 }

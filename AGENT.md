@@ -128,7 +128,8 @@ Run `npm run format` to auto-format code.
 4. **Write Tests** (`src/methods/__tests__/newmethod.test.ts`)
    - Use Vitest
    - Cover all edge cases
-   - Aim for 80%+ coverage
+   - **MUST achieve 100% test coverage** (statements, branches, functions, lines)
+   - Run `npm run test:coverage` to verify before committing
 
 5. **Update Docs** (README.md)
 
@@ -148,6 +149,7 @@ Tests must cover:
 
 - ✅ `npm run build` - No TypeScript errors
 - ✅ `npm test` - All tests pass
+- ✅ `npm run test:coverage` - **100% test coverage verified**
 - ✅ `npm run check` - Lint & format pass
 
 ## Common Tasks
@@ -181,6 +183,11 @@ See `.claude/commands/implement.md` for details.
 1. Identify untested code paths
 2. Add test cases to `__tests__/{method}.test.ts`
 3. Run `npm run test:coverage` to verify
+4. **CRITICAL: Coverage must be 100%** - All statements, branches, functions, and lines must be covered
+5. If coverage is below 100%, the CI will fail. Common fixes:
+   - Remove unreachable code paths
+   - Add tests for all error conditions
+   - Test both branches of conditional statements
 
 ### Task: Update MCP Tool Schema
 
