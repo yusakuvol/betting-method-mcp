@@ -7,6 +7,7 @@ import { CocomoMethod } from "./methods/cocomo.js";
 import { DAlembertMethod } from "./methods/dalembert.js";
 import { FibonacciMethod } from "./methods/fibonacci.js";
 import { GoodmanMethod } from "./methods/goodman.js";
+import { KellyCriterionMethod } from "./methods/kelly.js";
 import { LabouchereMethod } from "./methods/labouchere.js";
 import { MartingaleMethod } from "./methods/martingale.js";
 import { MonteCarloMethod } from "./methods/montecarlo.js";
@@ -25,6 +26,7 @@ const labouchere = new LabouchereMethod();
 const oscarsGrind = new OscarsGrindMethod();
 const paroli = new ParoliMethod();
 const percentage = new PercentageMethod();
+const kelly = new KellyCriterionMethod();
 
 // Create MCP server
 const server = new Server(
@@ -587,6 +589,86 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: "percentage_reset",
         description: "Reset the current Percentage betting session to initial state",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
+        name: "kelly_init",
+        description:
+          "Initialize a new Kelly Criterion betting session with bankroll, win probability, payout odds, and optional fractional Kelly",
+        inputSchema: {
+          type: "object",
+          properties: {
+            initialBankroll: {
+              type: "number",
+              description: "The initial bankroll amount (e.g., 1000)",
+              minimum: 0.01,
+            },
+            winProbability: {
+              type: "number",
+              description: "The estimated win probability (0-1, e.g., 0.55 for 55%)",
+              minimum: 0.001,
+              maximum: 0.999,
+            },
+            payoutOdds: {
+              type: "number",
+              description: "The payout odds (profit multiplier, e.g., 2.0 for 2x payout)",
+              minimum: 1.001,
+            },
+            fractionalKelly: {
+              type: "number",
+              description: "Fractional Kelly multiplier (0-1, default: 0.5 for Half Kelly)",
+              minimum: 0.001,
+              maximum: 1,
+            },
+            minBet: {
+              type: "number",
+              description: "The minimum bet amount (default: 1)",
+              minimum: 0.01,
+            },
+            maxBet: {
+              type: "number",
+              description: "The maximum bet amount (optional)",
+              minimum: 0.01,
+            },
+          },
+          required: ["initialBankroll", "winProbability", "payoutOdds"],
+        },
+      },
+      {
+        name: "kelly_record",
+        description: "Record a bet result (win or loss) and get the next recommended bet amount",
+        inputSchema: {
+          type: "object",
+          properties: {
+            result: {
+              type: "string",
+              enum: ["win", "loss"],
+              description: "The result of the bet",
+            },
+            actualPayout: {
+              type: "number",
+              description: "Optional actual payout amount (defaults to bet × payoutOdds)",
+              minimum: 0,
+            },
+          },
+          required: ["result"],
+        },
+      },
+      {
+        name: "kelly_status",
+        description:
+          "Get the current Kelly Criterion session status including bankroll, recommended bet, and statistics",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
+        name: "kelly_reset",
+        description: "Reset the current Kelly Criterion betting session to initial state",
         inputSchema: {
           type: "object",
           properties: {},
@@ -1634,6 +1716,153 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                   betPercentage: state.betPercentage,
                   minBet: state.minBet,
                   currentBet: state.currentBet,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "kelly_init": {
+        const {
+          initialBankroll,
+          winProbability,
+          payoutOdds,
+          fractionalKelly = 0.5,
+          minBet = 1,
+          maxBet,
+        } = args as {
+          initialBankroll: number;
+          winProbability: number;
+          payoutOdds: number;
+          fractionalKelly?: number;
+          minBet?: number;
+          maxBet?: number;
+        };
+        kelly.initSession(
+          initialBankroll,
+          winProbability,
+          payoutOdds,
+          fractionalKelly,
+          minBet,
+          maxBet,
+        );
+        const state = kelly.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: "Kelly Criterion session initialized",
+                  initialBankroll: state.initialBankroll,
+                  currentBankroll: state.currentBankroll,
+                  winProbability: state.winProbability,
+                  payoutOdds: state.payoutOdds,
+                  kellyPercentage: state.kellyPercentage,
+                  fractionalKelly: state.fractionalKelly,
+                  recommendedBet: state.currentBet,
+                  minBet: state.minBet,
+                  maxBet: state.maxBet,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "kelly_record": {
+        const { result, actualPayout } = args as {
+          result: "win" | "loss";
+          actualPayout?: number;
+        };
+        kelly.recordResult(result, actualPayout);
+        const state = kelly.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: `Recorded ${result}`,
+                  currentBankroll: state.currentBankroll,
+                  recommendedBet: state.currentBet,
+                  totalProfit: state.totalProfit,
+                  kellyPercentage: state.kellyPercentage,
+                  actualWinRate: state.actualWinRate,
+                  totalWins: state.totalWins,
+                  totalLosses: state.totalLosses,
+                  sessionActive: state.sessionActive,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "kelly_status": {
+        const state = kelly.getState();
+        const bankrollChange =
+          ((state.currentBankroll - state.initialBankroll) / state.initialBankroll) * 100;
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  initialBankroll: state.initialBankroll,
+                  currentBankroll: state.currentBankroll,
+                  bankrollChange: `${bankrollChange >= 0 ? "+" : ""}${bankrollChange.toFixed(2)}%`,
+                  winProbability: state.winProbability,
+                  payoutOdds: state.payoutOdds,
+                  kellyPercentage: state.kellyPercentage,
+                  fractionalKelly: state.fractionalKelly,
+                  recommendedBet: state.currentBet,
+                  minBet: state.minBet,
+                  maxBet: state.maxBet,
+                  totalWins: state.totalWins,
+                  totalLosses: state.totalLosses,
+                  actualWinRate: state.actualWinRate,
+                  totalProfit: state.totalProfit,
+                  sessionActive: state.sessionActive,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "kelly_reset": {
+        kelly.reset();
+        const state = kelly.getState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: "Session reset to initial state",
+                  initialBankroll: state.initialBankroll,
+                  currentBankroll: state.currentBankroll,
+                  winProbability: state.winProbability,
+                  payoutOdds: state.payoutOdds,
+                  kellyPercentage: state.kellyPercentage,
+                  fractionalKelly: state.fractionalKelly,
+                  recommendedBet: state.currentBet,
+                  minBet: state.minBet,
+                  maxBet: state.maxBet,
                   totalProfit: state.totalProfit,
                   sessionActive: state.sessionActive,
                 },

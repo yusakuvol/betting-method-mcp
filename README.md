@@ -6,7 +6,7 @@
 
 An MCP (Model Context Protocol) server that provides calculations for various betting methods. Can be used with Claude Desktop and other MCP-compatible applications.
 
-**✨ Now supports 10 betting methods!**
+**✨ Now supports 11 betting methods!**
 
 ## 🎲 Supported Betting Methods
 
@@ -20,6 +20,7 @@ An MCP (Model Context Protocol) server that provides calculations for various be
 - **Paroli System** - Reverse Martingale (double on wins)
 - **D'Alembert Method** - Gradual increase/decrease
 - **Fixed Percentage Betting** - Bankroll percentage strategy (e.g., 10% method)
+- **Kelly Criterion** - Mathematically optimal bet sizing for long-term growth
 
 ## 📦 Installation
 
@@ -128,6 +129,7 @@ Each betting method provides 4 MCP tools:
 - `paroli` - Paroli System
 - `dalembert` - D'Alembert Method
 - `percentage` - Fixed Percentage Betting
+- `kelly` - Kelly Criterion
 
 ## 📖 Method Details
 
@@ -180,6 +182,22 @@ Gradual progression: +1 unit on loss, -1 unit on win.
 
 Bet a fixed percentage of your bankroll (e.g., 10% of current bankroll).
 
+### Kelly Criterion
+
+Mathematically optimal betting strategy that calculates the ideal bet size to maximize long-term bankroll growth.
+
+**How it works:**
+1. Formula: `f* = (bp - q) / b`
+   - `f*` = optimal bet fraction (percentage of bankroll)
+   - `b` = payout odds (profit multiplier)
+   - `p` = win probability
+   - `q` = loss probability (1 - p)
+2. **Fractional Kelly**: Use a fraction (0.25, 0.5, etc.) of full Kelly to reduce volatility
+3. **Dynamic adjustment**: After 30+ games, uses actual win rate instead of estimated probability
+4. Automatically adjusts bet size based on current bankroll and performance
+
+**⚠️ Note:** Full Kelly (1.0) can be very volatile. Half Kelly (0.5) or Quarter Kelly (0.25) are recommended for practical use.
+
 ## 🤝 Contributing
 
 We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
@@ -227,7 +245,7 @@ npm run dev
 
 ### Testing
 
-This project uses Vitest for testing with 234+ tests across 10 test files.
+This project uses Vitest for testing with 276+ tests across 11 test files.
 
 ```bash
 # Run all tests
@@ -298,7 +316,7 @@ betting-method-mcp/
 │   ├── index.ts                    # MCP server entry point
 │   ├── types.ts                    # Common type definitions
 │   └── methods/
-│       ├── __tests__/              # Vitest test files (10 files)
+│       ├── __tests__/              # Vitest test files (11 files)
 │       ├── montecarlo.ts
 │       ├── martingale.ts
 │       ├── labouchere.ts
@@ -308,7 +326,8 @@ betting-method-mcp/
 │       ├── fibonacci.ts
 │       ├── paroli.ts
 │       ├── dalembert.ts
-│       └── percentage.ts
+│       ├── percentage.ts
+│       └── kelly.ts
 ├── .docs/                          # Method specifications (Japanese)
 ├── build/                          # Compiled files
 └── ...

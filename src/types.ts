@@ -139,3 +139,21 @@ export interface PercentageState extends BettingMethodState {
   totalLosses: number;
   profitPercentage: number;
 }
+
+/**
+ * Kelly Criterion method specific state
+ */
+export interface KellyCriterionState extends BettingMethodState {
+  currentBankroll: number;
+  initialBankroll: number;
+  winProbability: number;
+  payoutOdds: number;
+  kellyPercentage: number;
+  fractionalKelly: number;
+  minBet: number;
+  maxBet?: number;
+  totalWins: number;
+  totalLosses: number;
+  actualWinRate: number;
+  bankrollHistory: number[];
+}
