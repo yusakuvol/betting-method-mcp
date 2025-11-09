@@ -71,6 +71,8 @@ TypeScript MCP (Model Context Protocol) server for betting method calculations
 
 ## Testing Requirements (Vitest)
 
+**⚠️ CRITICAL: 100% test coverage is REQUIRED**
+
 Every method needs tests for:
 1. initSession - valid params & error cases
 2. recordResult - win scenarios
@@ -80,6 +82,17 @@ Every method needs tests for:
 6. reset - state reset verification
 7. error handling - session not active
 8. edge cases - limits and boundaries
+
+**Coverage Requirements:**
+- Statements: 100%
+- Branches: 100%
+- Functions: 100%
+- Lines: 100%
+
+**Before committing:**
+- Run `npm run test:coverage` to verify 100% coverage
+- CI will fail if coverage is below 100%
+- Common fixes: Remove unreachable code, add missing test cases
 
 Test structure:
 ```typescript
@@ -198,7 +211,8 @@ this.state.totalProfit += loss;
 Before suggesting commits:
 1. npm run build (TypeScript check)
 2. npm test (all tests pass)
-3. npm run check (lint + format)
+3. npm run test:coverage (verify 100% coverage - CRITICAL!)
+4. npm run check (lint + format)
 
 ## Documentation
 

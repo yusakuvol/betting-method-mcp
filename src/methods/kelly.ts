@@ -178,7 +178,8 @@ export class KellyCriterionMethod {
 
     // Update actual win rate
     const totalGames = this.state.totalWins + this.state.totalLosses;
-    this.state.actualWinRate = totalGames > 0 ? this.state.totalWins / totalGames : 0;
+    // totalGames is always > 0 here since we just incremented totalWins or totalLosses
+    this.state.actualWinRate = this.state.totalWins / totalGames;
 
     // Recalculate Kelly percentage (optionally use actual win rate if enough data)
     let effectiveWinProbability = this.state.winProbability;

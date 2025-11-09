@@ -287,14 +287,19 @@ describe("KellyCriterionMethod", () => {
     });
 
     it("should throw error when bet exceeds bankroll", () => {
-      kelly.initSession(100, 0.55, 2.0, 1.0, 1); // Full Kelly, might exceed
+      // Create a scenario where bet might exceed bankroll
+      // Use very high win probability and full Kelly to maximize bet
+      kelly.initSession(50, 0.99, 2.0, 1.0, 1);
       const state = kelly.getState();
 
-      if (state.currentBet > state.currentBankroll) {
-        expect(() => {
-          kelly.recordResult("win");
-        }).toThrow("Cannot record result: bet exceeds current bankroll");
-      }
+      // Manually set currentBet to exceed bankroll to test the check
+      // This simulates a state inconsistency that could occur
+      // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+      (kelly as any).state.currentBet = state.currentBankroll + 10;
+
+      expect(() => {
+        kelly.recordResult("win");
+      }).toThrow("Cannot record result: bet exceeds current bankroll");
     });
   });
 
