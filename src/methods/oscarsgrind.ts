@@ -1,4 +1,9 @@
-import type { BetResult, OscarsGrindState } from "../types.js";
+import type { BetResult, OscarsGrindState, SessionStatistics } from "../types.js";
+import {
+  initializeStatistics,
+  updateStatistics,
+  calculateRiskMetrics,
+} from "../utils/statistics.js";
 
 /**
  * Oscar's Grind betting method calculator
@@ -55,6 +60,7 @@ export class OscarsGrindMethod {
       totalProfit: 0,
       sessionActive: true,
       sessionsCompleted: 0,
+      statistics: initializeStatistics(),
     };
   }
 
@@ -67,6 +73,13 @@ export class OscarsGrindMethod {
     }
 
     const betAmount = this.state.currentBetUnits * this.state.baseUnit;
+
+    // Update statistics
+    if (!this.state.statistics) {
+      this.state.statistics = initializeStatistics();
+    }
+    const payout = result === "win" ? betAmount * 2 : 0;
+    this.state.statistics = updateStatistics(this.state.statistics, betAmount, result, payout);
 
     if (result === "win") {
       // Update profit
@@ -94,6 +107,9 @@ export class OscarsGrindMethod {
       this.state.currentProfitUnits -= this.state.currentBetUnits;
       // currentBetUnits stays the same
     }
+
+    // Update risk metrics
+    this.state.statistics = calculateRiskMetrics(this.state.statistics);
   }
 
   /**
@@ -101,6 +117,27 @@ export class OscarsGrindMethod {
    */
   getState(): OscarsGrindState {
     return { ...this.state };
+  }
+
+  /**
+   * Get statistics for the current session
+   */
+  getStatistics(): SessionStatistics | undefined {
+    if (!this.state.statistics) {
+      return undefined;
+    }
+    return {
+      ...this.state.statistics,
+      betHistory: this.state.statistics.betHistory
+        ? [...this.state.statistics.betHistory]
+        : undefined,
+      outcomeHistory: this.state.statistics.outcomeHistory
+        ? [...this.state.statistics.outcomeHistory]
+        : undefined,
+      bankrollHistory: this.state.statistics.bankrollHistory
+        ? [...this.state.statistics.bankrollHistory]
+        : undefined,
+    };
   }
 
   /**

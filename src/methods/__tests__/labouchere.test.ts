@@ -396,4 +396,90 @@ describe("LabouchereMethod", () => {
       expect(state.sessionActive).toBe(false);
     });
   });
+
+  describe("statistics", () => {
+    it("should initialize statistics on session start", () => {
+      labouchere.initSession(10, 10, [1, 2, 3, 4]);
+      const stats = labouchere.getStatistics();
+      expect(stats).toBeDefined();
+      expect(stats?.totalGames).toBe(0);
+    });
+
+    it("should update statistics on recordResult", () => {
+      labouchere.initSession(10, 10, [1, 2, 3, 4]);
+      labouchere.recordResult("win");
+      const stats = labouchere.getStatistics();
+      expect(stats?.totalGames).toBe(1);
+      expect(stats?.totalWins).toBe(1);
+      expect(stats?.totalLosses).toBe(0);
+    });
+
+    it("should return undefined when statistics not initialized", () => {
+      const labouchere2 = new LabouchereMethod();
+      const stats = labouchere2.getStatistics();
+      expect(stats).toBeUndefined();
+    });
+
+    it("should track bet history", () => {
+      labouchere.initSession(10, 10, [1, 2, 3, 4]);
+      labouchere.recordResult("win");
+      labouchere.recordResult("loss");
+      const stats = labouchere.getStatistics();
+      expect(stats?.betHistory).toHaveLength(2);
+      expect(stats?.outcomeHistory).toHaveLength(2);
+    });
+
+    it("should return deep copy of history arrays", () => {
+      labouchere.initSession(10, 10, [1, 2, 3, 4]);
+      labouchere.recordResult("win");
+      const stats1 = labouchere.getStatistics();
+      const stats2 = labouchere.getStatistics();
+
+      expect(stats1?.betHistory).toEqual(stats2?.betHistory);
+      expect(stats1?.betHistory).not.toBe(stats2?.betHistory);
+      expect(stats1?.outcomeHistory).not.toBe(stats2?.outcomeHistory);
+    });
+
+    it("should handle undefined history arrays", () => {
+      labouchere.initSession(10, 10, [1, 2, 3, 4]);
+      // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+      (labouchere as any).state.statistics = {
+        // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+        ...(labouchere as any).state.statistics,
+        betHistory: undefined,
+        outcomeHistory: undefined,
+        bankrollHistory: undefined,
+      };
+      const stats = labouchere.getStatistics();
+      expect(stats?.betHistory).toBeUndefined();
+      expect(stats?.outcomeHistory).toBeUndefined();
+      expect(stats?.bankrollHistory).toBeUndefined();
+    });
+
+    it("should handle defined bankrollHistory", () => {
+      labouchere.initSession(10, 10, [1, 2, 3, 4]);
+      // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+      (labouchere as any).state.statistics = {
+        // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+        ...(labouchere as any).state.statistics,
+        bankrollHistory: [1000, 1100],
+      };
+      const stats = labouchere.getStatistics();
+      expect(stats?.bankrollHistory).toEqual([1000, 1100]);
+      expect(stats?.bankrollHistory).not.toBe(
+        // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+        (labouchere as any).state.statistics.bankrollHistory,
+      );
+    });
+
+    it("should initialize statistics if missing in recordResult", () => {
+      labouchere.initSession(10, 10, [1, 2, 3, 4]);
+      // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+      (labouchere as any).state.statistics = undefined;
+      labouchere.recordResult("win");
+      const stats = labouchere.getStatistics();
+      expect(stats).toBeDefined();
+      expect(stats?.totalGames).toBe(1);
+    });
+  });
 });

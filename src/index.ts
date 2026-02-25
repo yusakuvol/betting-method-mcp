@@ -162,6 +162,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         },
       },
       {
+        name: "martingale_statistics",
+        description:
+          "Get detailed statistics for the current Martingale session including win rate, ROI, streaks, and risk metrics",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
         name: "cocomo_init",
         description:
           "Initialize a new Cocomo betting session with base unit and optional max bet limit",
@@ -328,6 +337,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         },
       },
       {
+        name: "labouchere_statistics",
+        description:
+          "Get detailed statistics for the current Labouchere session including win rate, ROI, streaks, and risk metrics",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
         name: "oscarsgrind_init",
         description:
           "Initialize a new Oscar's Grind betting session with base unit and optional parameters",
@@ -380,6 +398,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: "oscarsgrind_reset",
         description: "Reset the current Oscar's Grind session to initial state",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
+        name: "oscarsgrind_statistics",
+        description:
+          "Get detailed statistics for the current Oscar's Grind session including win rate, ROI, streaks, and risk metrics",
         inputSchema: {
           type: "object",
           properties: {},
@@ -958,6 +985,70 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
+      case "martingale_statistics": {
+        const stats = martingale.getStatistics();
+        if (!stats) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(
+                  {
+                    message: "No statistics available. Please initialize a session first.",
+                  },
+                  null,
+                  2,
+                ),
+              },
+            ],
+          };
+        }
+        const { generateSummary } = await import("./utils/statistics.js").then((m) => m);
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  basic: {
+                    totalGames: stats.totalGames,
+                    winRate: stats.winRate,
+                    netProfit: stats.netProfit,
+                    roi: stats.roi,
+                  },
+                  streaks: {
+                    current: stats.currentStreak,
+                    maxWin: stats.maxWinStreak,
+                    maxLoss: stats.maxLossStreak,
+                  },
+                  financial: {
+                    totalWagered: stats.totalWagered,
+                    totalReturned: stats.totalReturned,
+                    netProfit: stats.netProfit,
+                    roi: stats.roi,
+                  },
+                  betAmounts: {
+                    average: stats.averageBet,
+                    min: stats.minBet === Infinity ? 0 : stats.minBet,
+                    max: stats.maxBet,
+                  },
+                  risk:
+                    stats.volatility !== undefined || stats.sharpeRatio !== undefined
+                      ? {
+                          volatility: stats.volatility,
+                          sharpeRatio: stats.sharpeRatio,
+                        }
+                      : undefined,
+                  summary: generateSummary(stats),
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
       case "cocomo_init": {
         const { baseUnit, maxBet } = args as {
           baseUnit: number;
@@ -1275,6 +1366,70 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
+      case "labouchere_statistics": {
+        const stats = labouchere.getStatistics();
+        if (!stats) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(
+                  {
+                    message: "No statistics available. Please initialize a session first.",
+                  },
+                  null,
+                  2,
+                ),
+              },
+            ],
+          };
+        }
+        const { generateSummary } = await import("./utils/statistics.js").then((m) => m);
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  basic: {
+                    totalGames: stats.totalGames,
+                    winRate: stats.winRate,
+                    netProfit: stats.netProfit,
+                    roi: stats.roi,
+                  },
+                  streaks: {
+                    current: stats.currentStreak,
+                    maxWin: stats.maxWinStreak,
+                    maxLoss: stats.maxLossStreak,
+                  },
+                  financial: {
+                    totalWagered: stats.totalWagered,
+                    totalReturned: stats.totalReturned,
+                    netProfit: stats.netProfit,
+                    roi: stats.roi,
+                  },
+                  betAmounts: {
+                    average: stats.averageBet,
+                    min: stats.minBet === Infinity ? 0 : stats.minBet,
+                    max: stats.maxBet,
+                  },
+                  risk:
+                    stats.volatility !== undefined || stats.sharpeRatio !== undefined
+                      ? {
+                          volatility: stats.volatility,
+                          sharpeRatio: stats.sharpeRatio,
+                        }
+                      : undefined,
+                  summary: generateSummary(stats),
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
       case "oscarsgrind_init": {
         const { baseUnit, targetProfitUnits, maxBetUnits } = args as {
           baseUnit: number;
@@ -1378,6 +1533,70 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                   totalProfit: state.totalProfit,
                   sessionActive: state.sessionActive,
                   sessionsCompleted: state.sessionsCompleted,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+
+      case "oscarsgrind_statistics": {
+        const stats = oscarsGrind.getStatistics();
+        if (!stats) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(
+                  {
+                    message: "No statistics available. Please initialize a session first.",
+                  },
+                  null,
+                  2,
+                ),
+              },
+            ],
+          };
+        }
+        const { generateSummary } = await import("./utils/statistics.js").then((m) => m);
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  basic: {
+                    totalGames: stats.totalGames,
+                    winRate: stats.winRate,
+                    netProfit: stats.netProfit,
+                    roi: stats.roi,
+                  },
+                  streaks: {
+                    current: stats.currentStreak,
+                    maxWin: stats.maxWinStreak,
+                    maxLoss: stats.maxLossStreak,
+                  },
+                  financial: {
+                    totalWagered: stats.totalWagered,
+                    totalReturned: stats.totalReturned,
+                    netProfit: stats.netProfit,
+                    roi: stats.roi,
+                  },
+                  betAmounts: {
+                    average: stats.averageBet,
+                    min: stats.minBet === Infinity ? 0 : stats.minBet,
+                    max: stats.maxBet,
+                  },
+                  risk:
+                    stats.volatility !== undefined || stats.sharpeRatio !== undefined
+                      ? {
+                          volatility: stats.volatility,
+                          sharpeRatio: stats.sharpeRatio,
+                        }
+                      : undefined,
+                  summary: generateSummary(stats),
                 },
                 null,
                 2,
