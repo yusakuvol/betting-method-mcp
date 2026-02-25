@@ -232,6 +232,7 @@ describe("MonteCarloMethod", () => {
       monteCarlo.initSession(10);
       // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
       (monteCarlo as any).state.statistics = {
+        // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
         ...(monteCarlo as any).state.statistics,
         betHistory: undefined,
         outcomeHistory: undefined,
@@ -247,11 +248,13 @@ describe("MonteCarloMethod", () => {
       monteCarlo.initSession(10);
       // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
       (monteCarlo as any).state.statistics = {
+        // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
         ...(monteCarlo as any).state.statistics,
         bankrollHistory: [1000, 1100],
       };
       const stats = monteCarlo.getStatistics();
       expect(stats?.bankrollHistory).toEqual([1000, 1100]);
+      // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
       expect(stats?.bankrollHistory).not.toBe((monteCarlo as any).state.statistics.bankrollHistory);
     });
 

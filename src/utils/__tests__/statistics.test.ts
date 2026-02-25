@@ -1,18 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
-  calculateWinRate,
-  calculateROI,
   calculateDrawdown,
-  calculateVolatility,
-  calculateSharpeRatio,
-  updateStreak,
-  initializeStatistics,
-  updateStatistics,
-  updateBankrollStatistics,
   calculateRiskMetrics,
+  calculateROI,
+  calculateSharpeRatio,
+  calculateVolatility,
+  calculateWinRate,
   generateSummary,
+  initializeStatistics,
+  updateBankrollStatistics,
+  updateStatistics,
+  updateStreak,
 } from "../statistics.js";
-import type { BetResult } from "../../types.js";
 
 describe("statistics utilities", () => {
   describe("calculateWinRate", () => {

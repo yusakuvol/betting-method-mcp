@@ -1,8 +1,8 @@
 import type { BetResult, OscarsGrindState, SessionStatistics } from "../types.js";
 import {
+  calculateRiskMetrics,
   initializeStatistics,
   updateStatistics,
-  calculateRiskMetrics,
 } from "../utils/statistics.js";
 
 /**

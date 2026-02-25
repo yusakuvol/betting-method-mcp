@@ -30,14 +30,25 @@ betting-method-mcp/
 ├── src/
 │   ├── index.ts              # MCPサーバーのエントリーポイント
 │   ├── types.ts              # 共通型定義
-│   └── methods/              # ベッティング方法の実装
+│   ├── helpers/              # MCPレスポンス・ツール定義ヘルパー
+│   │   ├── mcp-response.ts   # レスポンス生成ユーティリティ
+│   │   ├── statistics-handler.ts  # 統計レスポンスビルダー
+│   │   └── tool-definitions.ts    # ツールスキーマファクトリ
+│   ├── utils/
+│   │   └── statistics.ts     # 統計計算ユーティリティ
+│   └── methods/              # ベッティング方法の実装（11メソッド）
 │       ├── montecarlo.ts     # モンテカルロ法
 │       ├── martingale.ts     # マーチンゲール法
-│       └── ... (将来追加される方法)
-├── docs/                     # ドキュメント
-│   ├── architecture.md       # このファイル
-│   ├── martingale.md         # マーチンゲール法の仕様
-│   └── ... (各方法の仕様書)
+│       ├── labouchere.ts     # ラブシェール法
+│       ├── oscarsgrind.ts    # オスカーズグラインド
+│       ├── cocomo.ts         # ココモ法
+│       ├── goodman.ts        # グッドマン法 (1-2-3-5)
+│       ├── fibonacci.ts      # フィボナッチ法
+│       ├── paroli.ts         # パーレー法
+│       ├── dalembert.ts      # ダランベール法
+│       ├── percentage.ts     # 固定パーセンテージ法
+│       └── kelly.ts          # ケリー基準
+├── .docs/                    # メソッド仕様書（日本語）
 ├── build/                    # TypeScriptコンパイル後のファイル
 ├── package.json
 ├── tsconfig.json
@@ -135,6 +146,7 @@ export class [MethodName]Method {
 - `{method}_record` - 勝敗の記録
 - `{method}_status` - 状態の確認
 - `{method}_reset` - セッションのリセット
+- `{method}_statistics` - セッション統計の取得（一部メソッドのみ）
 
 ### 例
 
@@ -271,19 +283,23 @@ try {
 - パラメータ不正: `"Invalid parameter: ..."`
 - 上限到達: `"Session ended: reached limit"`
 
+## 統計機能
+
+一部のメソッド（montecarlo, martingale, labouchere, oscarsgrind）には統計レポート機能が実装されています:
+
+- 基本統計: 勝率、ROI、純利益
+- ストリーク: 現在の連勝/連敗、最大連勝/連敗
+- 財務指標: 総賭け金、総リターン
+- ベット分析: 平均/最小/最大ベット
+- リスク指標: ボラティリティ、シャープレシオ
+
+統計ユーティリティは `src/utils/statistics.ts` に実装され、`src/helpers/statistics-handler.ts` がMCPレスポンスを生成します。
+
 ## 将来の拡張
-
-### 予定されているベッティング方法
-
-1. **パーレー法 (Paroli)**: 勝ったら賭け金を倍にする
-2. **ダランベール法 (D'Alembert)**: 負けたら+1、勝ったら-1
-3. **ラブシェール法 (Labouchere)**: より柔軟な数列ベース
-4. **フィボナッチ法**: フィボナッチ数列を使用
-5. **オスカーズグラインド**: 利益1単位を目標に調整
 
 ### 機能拡張の可能性
 
-- 統計機能: 勝率、平均賭け金、リスク指標
+- 全メソッドへの統計機能追加
 - シミュレーション: ランダムな結果で長期的な成績を予測
 - グラフ出力: 収支の推移を可視化
 - カスタムルール: ユーザー定義の戦略

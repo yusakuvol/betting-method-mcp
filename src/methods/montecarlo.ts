@@ -1,9 +1,8 @@
 import type { BetResult, MonteCarloState, SessionStatistics } from "../types.js";
 import {
+  calculateRiskMetrics,
   initializeStatistics,
   updateStatistics,
-  calculateRiskMetrics,
-  generateSummary,
 } from "../utils/statistics.js";
 
 /**
