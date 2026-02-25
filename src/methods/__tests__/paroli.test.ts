@@ -260,4 +260,89 @@ describe("ParoliMethod", () => {
       expect(state2.totalProfit).toBe(310); // 10+20+40+80+160
     });
   });
+
+  describe("statistics", () => {
+    it("should initialize statistics on session start", () => {
+      paroli.initSession(10);
+      const stats = paroli.getStatistics();
+      expect(stats).toBeDefined();
+      expect(stats?.totalGames).toBe(0);
+    });
+
+    it("should update statistics on recordResult", () => {
+      paroli.initSession(10);
+      paroli.recordResult("win");
+      const stats = paroli.getStatistics();
+      expect(stats?.totalGames).toBe(1);
+      expect(stats?.totalWins).toBe(1);
+      expect(stats?.totalLosses).toBe(0);
+    });
+
+    it("should return undefined when statistics not initialized", () => {
+      const paroli2 = new ParoliMethod();
+      const stats = paroli2.getStatistics();
+      expect(stats).toBeUndefined();
+    });
+
+    it("should track bet history", () => {
+      paroli.initSession(10);
+      paroli.recordResult("win");
+      paroli.recordResult("loss");
+      const stats = paroli.getStatistics();
+      expect(stats?.betHistory).toHaveLength(2);
+      expect(stats?.outcomeHistory).toHaveLength(2);
+    });
+
+    it("should return deep copy of history arrays", () => {
+      paroli.initSession(10);
+      paroli.recordResult("win");
+      const stats1 = paroli.getStatistics();
+      const stats2 = paroli.getStatistics();
+      expect(stats1?.betHistory).toEqual(stats2?.betHistory);
+      expect(stats1?.betHistory).not.toBe(stats2?.betHistory);
+      expect(stats1?.outcomeHistory).not.toBe(stats2?.outcomeHistory);
+    });
+
+    it("should handle undefined history arrays", () => {
+      paroli.initSession(10);
+      // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+      (paroli as any).state.statistics = {
+        // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+        ...(paroli as any).state.statistics,
+        betHistory: undefined,
+        outcomeHistory: undefined,
+        bankrollHistory: undefined,
+      };
+      const stats = paroli.getStatistics();
+      expect(stats?.betHistory).toBeUndefined();
+      expect(stats?.outcomeHistory).toBeUndefined();
+      expect(stats?.bankrollHistory).toBeUndefined();
+    });
+
+    it("should handle defined bankrollHistory", () => {
+      paroli.initSession(10);
+      // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+      (paroli as any).state.statistics = {
+        // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+        ...(paroli as any).state.statistics,
+        bankrollHistory: [1000, 1100],
+      };
+      const stats = paroli.getStatistics();
+      expect(stats?.bankrollHistory).toEqual([1000, 1100]);
+      expect(stats?.bankrollHistory).not.toBe(
+        // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+        (paroli as any).state.statistics.bankrollHistory,
+      );
+    });
+
+    it("should initialize statistics if missing in recordResult", () => {
+      paroli.initSession(10);
+      // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+      (paroli as any).state.statistics = undefined;
+      paroli.recordResult("win");
+      const stats = paroli.getStatistics();
+      expect(stats).toBeDefined();
+      expect(stats?.totalGames).toBe(1);
+    });
+  });
 });

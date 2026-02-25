@@ -304,4 +304,89 @@ describe("DAlembertMethod", () => {
       expect(state.totalProfit).toBe(40);
     });
   });
+
+  describe("statistics", () => {
+    it("should initialize statistics on session start", () => {
+      dalembert.initSession(10);
+      const stats = dalembert.getStatistics();
+      expect(stats).toBeDefined();
+      expect(stats?.totalGames).toBe(0);
+    });
+
+    it("should update statistics on recordResult", () => {
+      dalembert.initSession(10);
+      dalembert.recordResult("win");
+      const stats = dalembert.getStatistics();
+      expect(stats?.totalGames).toBe(1);
+      expect(stats?.totalWins).toBe(1);
+      expect(stats?.totalLosses).toBe(0);
+    });
+
+    it("should return undefined when statistics not initialized", () => {
+      const dalembert2 = new DAlembertMethod();
+      const stats = dalembert2.getStatistics();
+      expect(stats).toBeUndefined();
+    });
+
+    it("should track bet history", () => {
+      dalembert.initSession(10);
+      dalembert.recordResult("win");
+      dalembert.recordResult("loss");
+      const stats = dalembert.getStatistics();
+      expect(stats?.betHistory).toHaveLength(2);
+      expect(stats?.outcomeHistory).toHaveLength(2);
+    });
+
+    it("should return deep copy of history arrays", () => {
+      dalembert.initSession(10);
+      dalembert.recordResult("win");
+      const stats1 = dalembert.getStatistics();
+      const stats2 = dalembert.getStatistics();
+      expect(stats1?.betHistory).toEqual(stats2?.betHistory);
+      expect(stats1?.betHistory).not.toBe(stats2?.betHistory);
+      expect(stats1?.outcomeHistory).not.toBe(stats2?.outcomeHistory);
+    });
+
+    it("should handle undefined history arrays", () => {
+      dalembert.initSession(10);
+      // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+      (dalembert as any).state.statistics = {
+        // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+        ...(dalembert as any).state.statistics,
+        betHistory: undefined,
+        outcomeHistory: undefined,
+        bankrollHistory: undefined,
+      };
+      const stats = dalembert.getStatistics();
+      expect(stats?.betHistory).toBeUndefined();
+      expect(stats?.outcomeHistory).toBeUndefined();
+      expect(stats?.bankrollHistory).toBeUndefined();
+    });
+
+    it("should handle defined bankrollHistory", () => {
+      dalembert.initSession(10);
+      // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+      (dalembert as any).state.statistics = {
+        // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+        ...(dalembert as any).state.statistics,
+        bankrollHistory: [1000, 1100],
+      };
+      const stats = dalembert.getStatistics();
+      expect(stats?.bankrollHistory).toEqual([1000, 1100]);
+      expect(stats?.bankrollHistory).not.toBe(
+        // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+        (dalembert as any).state.statistics.bankrollHistory,
+      );
+    });
+
+    it("should initialize statistics if missing in recordResult", () => {
+      dalembert.initSession(10);
+      // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+      (dalembert as any).state.statistics = undefined;
+      dalembert.recordResult("win");
+      const stats = dalembert.getStatistics();
+      expect(stats).toBeDefined();
+      expect(stats?.totalGames).toBe(1);
+    });
+  });
 });

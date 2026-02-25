@@ -331,4 +331,89 @@ describe("GoodmanMethod", () => {
       expect(goodman.getState().cyclesCompleted).toBe(2);
     });
   });
+
+  describe("statistics", () => {
+    it("should initialize statistics on session start", () => {
+      goodman.initSession(10);
+      const stats = goodman.getStatistics();
+      expect(stats).toBeDefined();
+      expect(stats?.totalGames).toBe(0);
+    });
+
+    it("should update statistics on recordResult", () => {
+      goodman.initSession(10);
+      goodman.recordResult("win");
+      const stats = goodman.getStatistics();
+      expect(stats?.totalGames).toBe(1);
+      expect(stats?.totalWins).toBe(1);
+      expect(stats?.totalLosses).toBe(0);
+    });
+
+    it("should return undefined when statistics not initialized", () => {
+      const goodman2 = new GoodmanMethod();
+      const stats = goodman2.getStatistics();
+      expect(stats).toBeUndefined();
+    });
+
+    it("should track bet history", () => {
+      goodman.initSession(10);
+      goodman.recordResult("win");
+      goodman.recordResult("loss");
+      const stats = goodman.getStatistics();
+      expect(stats?.betHistory).toHaveLength(2);
+      expect(stats?.outcomeHistory).toHaveLength(2);
+    });
+
+    it("should return deep copy of history arrays", () => {
+      goodman.initSession(10);
+      goodman.recordResult("win");
+      const stats1 = goodman.getStatistics();
+      const stats2 = goodman.getStatistics();
+      expect(stats1?.betHistory).toEqual(stats2?.betHistory);
+      expect(stats1?.betHistory).not.toBe(stats2?.betHistory);
+      expect(stats1?.outcomeHistory).not.toBe(stats2?.outcomeHistory);
+    });
+
+    it("should handle undefined history arrays", () => {
+      goodman.initSession(10);
+      // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+      (goodman as any).state.statistics = {
+        // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+        ...(goodman as any).state.statistics,
+        betHistory: undefined,
+        outcomeHistory: undefined,
+        bankrollHistory: undefined,
+      };
+      const stats = goodman.getStatistics();
+      expect(stats?.betHistory).toBeUndefined();
+      expect(stats?.outcomeHistory).toBeUndefined();
+      expect(stats?.bankrollHistory).toBeUndefined();
+    });
+
+    it("should handle defined bankrollHistory", () => {
+      goodman.initSession(10);
+      // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+      (goodman as any).state.statistics = {
+        // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+        ...(goodman as any).state.statistics,
+        bankrollHistory: [1000, 1100],
+      };
+      const stats = goodman.getStatistics();
+      expect(stats?.bankrollHistory).toEqual([1000, 1100]);
+      expect(stats?.bankrollHistory).not.toBe(
+        // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+        (goodman as any).state.statistics.bankrollHistory,
+      );
+    });
+
+    it("should initialize statistics if missing in recordResult", () => {
+      goodman.initSession(10);
+      // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+      (goodman as any).state.statistics = undefined;
+      goodman.recordResult("win");
+      const stats = goodman.getStatistics();
+      expect(stats).toBeDefined();
+      expect(stats?.totalGames).toBe(1);
+    });
+  });
 });

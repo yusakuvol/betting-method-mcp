@@ -1,4 +1,9 @@
-import type { BetResult, KellyCriterionState } from "../types.js";
+import type { BetResult, KellyCriterionState, SessionStatistics } from "../types.js";
+import {
+  calculateRiskMetrics,
+  initializeStatistics,
+  updateStatistics,
+} from "../utils/statistics.js";
 
 /**
  * Kelly Criterion betting method calculator
@@ -98,6 +103,7 @@ export class KellyCriterionMethod {
       ),
       totalProfit: 0,
       sessionActive: true,
+      statistics: initializeStatistics(),
     };
   }
 
@@ -156,6 +162,18 @@ export class KellyCriterionMethod {
 
     const currentBet = this.state.currentBet;
 
+    // Update statistics
+    if (!this.state.statistics) {
+      this.state.statistics = initializeStatistics();
+    }
+    const statsPayout = result === "win" ? (actualPayout ?? currentBet * this.state.payoutOdds) : 0;
+    this.state.statistics = updateStatistics(
+      this.state.statistics,
+      currentBet,
+      result,
+      statsPayout,
+    );
+
     if (currentBet <= 0) {
       throw new Error("Cannot record result: recommended bet is 0 or negative");
     }
@@ -205,6 +223,9 @@ export class KellyCriterionMethod {
       this.state.maxBet,
     );
 
+    // Update risk metrics
+    this.state.statistics = calculateRiskMetrics(this.state.statistics);
+
     // End session if bankroll is too low
     if (this.state.currentBankroll < this.state.minBet) {
       this.state.sessionActive = false;
@@ -219,6 +240,27 @@ export class KellyCriterionMethod {
     return {
       ...this.state,
       bankrollHistory: [...this.state.bankrollHistory], // Deep copy
+    };
+  }
+
+  /**
+   * Get statistics for the current session
+   */
+  getStatistics(): SessionStatistics | undefined {
+    if (!this.state.statistics) {
+      return undefined;
+    }
+    return {
+      ...this.state.statistics,
+      betHistory: this.state.statistics.betHistory
+        ? [...this.state.statistics.betHistory]
+        : undefined,
+      outcomeHistory: this.state.statistics.outcomeHistory
+        ? [...this.state.statistics.outcomeHistory]
+        : undefined,
+      bankrollHistory: this.state.statistics.bankrollHistory
+        ? [...this.state.statistics.bankrollHistory]
+        : undefined,
     };
   }
 
