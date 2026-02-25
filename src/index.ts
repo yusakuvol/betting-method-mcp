@@ -3,6 +3,14 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
+import { createErrorResponse, createToolResponse } from "./helpers/mcp-response.js";
+import { handleStatistics } from "./helpers/statistics-handler.js";
+import {
+  createRecordTool,
+  createResetTool,
+  createStatisticsTool,
+  createStatusTool,
+} from "./helpers/tool-definitions.js";
 import { CocomoMethod } from "./methods/cocomo.js";
 import { DAlembertMethod } from "./methods/dalembert.js";
 import { FibonacciMethod } from "./methods/fibonacci.js";
@@ -47,6 +55,7 @@ const server = new Server(
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
+      // Monte Carlo
       {
         name: "montecarlo_init",
         description: "Initialize a new Monte Carlo betting session with a base unit amount",
@@ -62,47 +71,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ["baseUnit"],
         },
       },
-      {
-        name: "montecarlo_record",
-        description: "Record a bet result (win or loss) and get the next bet amount",
-        inputSchema: {
-          type: "object",
-          properties: {
-            result: {
-              type: "string",
-              enum: ["win", "loss"],
-              description: "The result of the bet",
-            },
-          },
-          required: ["result"],
-        },
-      },
-      {
-        name: "montecarlo_status",
-        description:
-          "Get the current Monte Carlo session status including sequence, current bet, and total profit",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
-      {
-        name: "montecarlo_reset",
-        description: "Reset the current Monte Carlo session to initial state",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
-      {
-        name: "montecarlo_statistics",
-        description:
-          "Get detailed statistics for the current Monte Carlo session including win rate, ROI, streaks, and risk metrics",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
+      createRecordTool("montecarlo"),
+      createStatusTool(
+        "montecarlo",
+        "Get the current Monte Carlo session status including sequence, current bet, and total profit",
+      ),
+      createResetTool("montecarlo", "Monte Carlo"),
+      createStatisticsTool("montecarlo", "Monte Carlo"),
+
+      // Martingale
       {
         name: "martingale_init",
         description:
@@ -129,47 +106,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ["baseUnit"],
         },
       },
-      {
-        name: "martingale_record",
-        description: "Record a bet result (win or loss) and get the next bet amount",
-        inputSchema: {
-          type: "object",
-          properties: {
-            result: {
-              type: "string",
-              enum: ["win", "loss"],
-              description: "The result of the bet",
-            },
-          },
-          required: ["result"],
-        },
-      },
-      {
-        name: "martingale_status",
-        description:
-          "Get the current Martingale session status including current bet, streak, and total profit",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
-      {
-        name: "martingale_reset",
-        description: "Reset the current Martingale session to initial state",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
-      {
-        name: "martingale_statistics",
-        description:
-          "Get detailed statistics for the current Martingale session including win rate, ROI, streaks, and risk metrics",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
+      createRecordTool("martingale"),
+      createStatusTool(
+        "martingale",
+        "Get the current Martingale session status including current bet, streak, and total profit",
+      ),
+      createResetTool("martingale", "Martingale"),
+      createStatisticsTool("martingale", "Martingale"),
+
+      // Cocomo
       {
         name: "cocomo_init",
         description:
@@ -191,38 +136,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ["baseUnit"],
         },
       },
-      {
-        name: "cocomo_record",
-        description: "Record a bet result (win or loss) and get the next bet amount",
-        inputSchema: {
-          type: "object",
-          properties: {
-            result: {
-              type: "string",
-              enum: ["win", "loss"],
-              description: "The result of the bet",
-            },
-          },
-          required: ["result"],
-        },
-      },
-      {
-        name: "cocomo_status",
-        description:
-          "Get the current Cocomo session status including current bet, streak, and total profit",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
-      {
-        name: "cocomo_reset",
-        description: "Reset the current Cocomo session to initial state",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
+      createRecordTool("cocomo"),
+      createStatusTool(
+        "cocomo",
+        "Get the current Cocomo session status including current bet, streak, and total profit",
+      ),
+      createResetTool("cocomo", "Cocomo"),
+
+      // Goodman
       {
         name: "goodman_init",
         description: "Initialize a new Goodman (1-2-3-5) betting session with a base unit amount",
@@ -238,38 +159,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ["baseUnit"],
         },
       },
-      {
-        name: "goodman_record",
-        description: "Record a bet result (win or loss) and get the next bet amount",
-        inputSchema: {
-          type: "object",
-          properties: {
-            result: {
-              type: "string",
-              enum: ["win", "loss"],
-              description: "The result of the bet",
-            },
-          },
-          required: ["result"],
-        },
-      },
-      {
-        name: "goodman_status",
-        description:
-          "Get the current Goodman session status including current bet, step, win streak, and total profit",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
-      {
-        name: "goodman_reset",
-        description: "Reset the current Goodman session to initial state",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
+      createRecordTool("goodman"),
+      createStatusTool(
+        "goodman",
+        "Get the current Goodman session status including current bet, step, win streak, and total profit",
+      ),
+      createResetTool("goodman", "Goodman"),
+
+      // Labouchere
       {
         name: "labouchere_init",
         description:
@@ -304,47 +201,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ["baseUnit", "targetProfit"],
         },
       },
-      {
-        name: "labouchere_record",
-        description: "Record a bet result (win or loss) and get the next bet amount",
-        inputSchema: {
-          type: "object",
-          properties: {
-            result: {
-              type: "string",
-              enum: ["win", "loss"],
-              description: "The result of the bet",
-            },
-          },
-          required: ["result"],
-        },
-      },
-      {
-        name: "labouchere_status",
-        description:
-          "Get the current Labouchere session status including sequence, current bet, and total profit",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
-      {
-        name: "labouchere_reset",
-        description: "Reset the current Labouchere session to initial state",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
-      {
-        name: "labouchere_statistics",
-        description:
-          "Get detailed statistics for the current Labouchere session including win rate, ROI, streaks, and risk metrics",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
+      createRecordTool("labouchere"),
+      createStatusTool(
+        "labouchere",
+        "Get the current Labouchere session status including sequence, current bet, and total profit",
+      ),
+      createResetTool("labouchere", "Labouchere"),
+      createStatisticsTool("labouchere", "Labouchere"),
+
+      // Oscar's Grind
       {
         name: "oscarsgrind_init",
         description:
@@ -371,47 +236,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ["baseUnit"],
         },
       },
-      {
-        name: "oscarsgrind_record",
-        description: "Record a bet result (win or loss) and get the next bet amount",
-        inputSchema: {
-          type: "object",
-          properties: {
-            result: {
-              type: "string",
-              enum: ["win", "loss"],
-              description: "The result of the bet",
-            },
-          },
-          required: ["result"],
-        },
-      },
-      {
-        name: "oscarsgrind_status",
-        description:
-          "Get the current Oscar's Grind session status including current bet, profit, and sessions completed",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
-      {
-        name: "oscarsgrind_reset",
-        description: "Reset the current Oscar's Grind session to initial state",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
-      {
-        name: "oscarsgrind_statistics",
-        description:
-          "Get detailed statistics for the current Oscar's Grind session including win rate, ROI, streaks, and risk metrics",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
+      createRecordTool("oscarsgrind"),
+      createStatusTool(
+        "oscarsgrind",
+        "Get the current Oscar's Grind session status including current bet, profit, and sessions completed",
+      ),
+      createResetTool("oscarsgrind", "Oscar's Grind"),
+      createStatisticsTool("oscarsgrind", "Oscar's Grind"),
+
+      // D'Alembert
       {
         name: "dalembert_init",
         description:
@@ -433,38 +266,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ["baseUnit"],
         },
       },
-      {
-        name: "dalembert_record",
-        description: "Record a bet result (win or loss) and get the next bet amount",
-        inputSchema: {
-          type: "object",
-          properties: {
-            result: {
-              type: "string",
-              enum: ["win", "loss"],
-              description: "The result of the bet",
-            },
-          },
-          required: ["result"],
-        },
-      },
-      {
-        name: "dalembert_status",
-        description:
-          "Get the current D'Alembert session status including current bet and total profit",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
-      {
-        name: "dalembert_reset",
-        description: "Reset the current D'Alembert session to initial state",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
+      createRecordTool("dalembert"),
+      createStatusTool(
+        "dalembert",
+        "Get the current D'Alembert session status including current bet and total profit",
+      ),
+      createResetTool("dalembert", "D'Alembert"),
+
+      // Fibonacci
       {
         name: "fibonacci_init",
         description:
@@ -486,38 +295,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ["baseUnit"],
         },
       },
-      {
-        name: "fibonacci_record",
-        description: "Record a bet result (win or loss) and get the next bet amount",
-        inputSchema: {
-          type: "object",
-          properties: {
-            result: {
-              type: "string",
-              enum: ["win", "loss"],
-              description: "The result of the bet",
-            },
-          },
-          required: ["result"],
-        },
-      },
-      {
-        name: "fibonacci_status",
-        description:
-          "Get the current Fibonacci session status including sequence position, current bet, and total profit",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
-      {
-        name: "fibonacci_reset",
-        description: "Reset the current Fibonacci session to initial state",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
+      createRecordTool("fibonacci"),
+      createStatusTool(
+        "fibonacci",
+        "Get the current Fibonacci session status including sequence position, current bet, and total profit",
+      ),
+      createResetTool("fibonacci", "Fibonacci"),
+
+      // Paroli
       {
         name: "paroli_init",
         description:
@@ -539,38 +324,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ["baseUnit"],
         },
       },
-      {
-        name: "paroli_record",
-        description: "Record a bet result (win or loss) and get the next bet amount",
-        inputSchema: {
-          type: "object",
-          properties: {
-            result: {
-              type: "string",
-              enum: ["win", "loss"],
-              description: "The result of the bet",
-            },
-          },
-          required: ["result"],
-        },
-      },
-      {
-        name: "paroli_status",
-        description:
-          "Get the current Paroli session status including current bet, win streak, and total profit",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
-      {
-        name: "paroli_reset",
-        description: "Reset the current Paroli session to initial state",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
+      createRecordTool("paroli"),
+      createStatusTool(
+        "paroli",
+        "Get the current Paroli session status including current bet, win streak, and total profit",
+      ),
+      createResetTool("paroli", "Paroli"),
+
+      // Percentage
       {
         name: "percentage_init",
         description:
@@ -598,38 +359,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ["initialBankroll", "betPercentage", "minBet"],
         },
       },
-      {
-        name: "percentage_record",
-        description: "Record a bet result (win or loss) and get the next bet amount",
-        inputSchema: {
-          type: "object",
-          properties: {
-            result: {
-              type: "string",
-              enum: ["win", "loss"],
-              description: "The result of the bet",
-            },
-          },
-          required: ["result"],
-        },
-      },
-      {
-        name: "percentage_status",
-        description:
-          "Get the current Percentage betting session status including bankroll, current bet, and profit percentage",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
-      {
-        name: "percentage_reset",
-        description: "Reset the current Percentage betting session to initial state",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
+      createRecordTool("percentage"),
+      createStatusTool(
+        "percentage",
+        "Get the current Percentage betting session status including bankroll, current bet, and profit percentage",
+      ),
+      createResetTool("percentage", "Percentage betting"),
+
+      // Kelly Criterion
       {
         name: "kelly_init",
         description:
@@ -693,23 +430,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ["result"],
         },
       },
-      {
-        name: "kelly_status",
-        description:
-          "Get the current Kelly Criterion session status including bankroll, recommended bet, and statistics",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
-      {
-        name: "kelly_reset",
-        description: "Reset the current Kelly Criterion betting session to initial state",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
+      createStatusTool(
+        "kelly",
+        "Get the current Kelly Criterion session status including bankroll, recommended bet, and statistics",
+      ),
+      createResetTool("kelly", "Kelly Criterion"),
     ],
   };
 });
@@ -722,166 +447,59 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
   try {
     switch (name) {
+      // Monte Carlo
       case "montecarlo_init": {
         const { baseUnit } = args as { baseUnit: number };
         monteCarlo.initSession(baseUnit);
         const state = monteCarlo.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: "Monte Carlo session initialized",
-                  baseUnit: state.baseUnit,
-                  sequence: state.sequence,
-                  currentBet: state.currentBet,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: "Monte Carlo session initialized",
+          baseUnit: state.baseUnit,
+          sequence: state.sequence,
+          currentBet: state.currentBet,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+        });
       }
-
       case "montecarlo_record": {
         const { result } = args as { result: "win" | "loss" };
         monteCarlo.recordResult(result);
         const state = monteCarlo.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: `Recorded ${result}`,
-                  sequence: state.sequence,
-                  currentBet: state.currentBet,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                  sessionComplete: !state.sessionActive,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: `Recorded ${result}`,
+          sequence: state.sequence,
+          currentBet: state.currentBet,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+          sessionComplete: !state.sessionActive,
+        });
       }
-
       case "montecarlo_status": {
         const state = monteCarlo.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  baseUnit: state.baseUnit,
-                  sequence: state.sequence,
-                  currentBet: state.currentBet,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          baseUnit: state.baseUnit,
+          sequence: state.sequence,
+          currentBet: state.currentBet,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+        });
       }
-
       case "montecarlo_reset": {
         monteCarlo.reset();
         const state = monteCarlo.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: "Session reset to initial state",
-                  baseUnit: state.baseUnit,
-                  sequence: state.sequence,
-                  currentBet: state.currentBet,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: "Session reset to initial state",
+          baseUnit: state.baseUnit,
+          sequence: state.sequence,
+          currentBet: state.currentBet,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+        });
       }
+      case "montecarlo_statistics":
+        return handleStatistics(monteCarlo.getStatistics());
 
-      case "montecarlo_statistics": {
-        const stats = monteCarlo.getStatistics();
-        if (!stats) {
-          return {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(
-                  {
-                    message: "No statistics available. Please initialize a session first.",
-                  },
-                  null,
-                  2,
-                ),
-              },
-            ],
-          };
-        }
-        const { generateSummary } = await import("./utils/statistics.js").then((m) => m);
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  basic: {
-                    totalGames: stats.totalGames,
-                    winRate: stats.winRate,
-                    netProfit: stats.netProfit,
-                    roi: stats.roi,
-                  },
-                  streaks: {
-                    current: stats.currentStreak,
-                    maxWin: stats.maxWinStreak,
-                    maxLoss: stats.maxLossStreak,
-                  },
-                  financial: {
-                    totalWagered: stats.totalWagered,
-                    totalReturned: stats.totalReturned,
-                    netProfit: stats.netProfit,
-                    roi: stats.roi,
-                  },
-                  betAmounts: {
-                    average: stats.averageBet,
-                    min: stats.minBet === Infinity ? 0 : stats.minBet,
-                    max: stats.maxBet,
-                  },
-                  risk:
-                    stats.volatility !== undefined || stats.sharpeRatio !== undefined
-                      ? {
-                          volatility: stats.volatility,
-                          sharpeRatio: stats.sharpeRatio,
-                        }
-                      : undefined,
-                  summary: generateSummary(stats),
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
-      }
-
+      // Martingale
       case "martingale_init": {
         const { baseUnit, maxBet, maxLossStreak } = args as {
           baseUnit: number;
@@ -890,373 +508,170 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
         martingale.initSession(baseUnit, maxBet, maxLossStreak);
         const state = martingale.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: "Martingale session initialized",
-                  baseUnit: state.baseUnit,
-                  currentBet: state.currentBet,
-                  maxBet: state.maxBet,
-                  maxLossStreak: state.maxLossStreak,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: "Martingale session initialized",
+          baseUnit: state.baseUnit,
+          currentBet: state.currentBet,
+          maxBet: state.maxBet,
+          maxLossStreak: state.maxLossStreak,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+        });
       }
-
       case "martingale_record": {
         const { result } = args as { result: "win" | "loss" };
         martingale.recordResult(result);
         const state = martingale.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: `Recorded ${result}`,
-                  currentBet: state.currentBet,
-                  currentStreak: state.currentStreak,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                  reachedLimit: state.reachedLimit,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: `Recorded ${result}`,
+          currentBet: state.currentBet,
+          currentStreak: state.currentStreak,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+          reachedLimit: state.reachedLimit,
+        });
       }
-
       case "martingale_status": {
         const state = martingale.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  baseUnit: state.baseUnit,
-                  currentBet: state.currentBet,
-                  currentStreak: state.currentStreak,
-                  maxBet: state.maxBet,
-                  maxLossStreak: state.maxLossStreak,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                  reachedLimit: state.reachedLimit,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          baseUnit: state.baseUnit,
+          currentBet: state.currentBet,
+          currentStreak: state.currentStreak,
+          maxBet: state.maxBet,
+          maxLossStreak: state.maxLossStreak,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+          reachedLimit: state.reachedLimit,
+        });
       }
-
       case "martingale_reset": {
         martingale.reset();
         const state = martingale.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: "Session reset to initial state",
-                  baseUnit: state.baseUnit,
-                  currentBet: state.currentBet,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: "Session reset to initial state",
+          baseUnit: state.baseUnit,
+          currentBet: state.currentBet,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+        });
       }
+      case "martingale_statistics":
+        return handleStatistics(martingale.getStatistics());
 
-      case "martingale_statistics": {
-        const stats = martingale.getStatistics();
-        if (!stats) {
-          return {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(
-                  {
-                    message: "No statistics available. Please initialize a session first.",
-                  },
-                  null,
-                  2,
-                ),
-              },
-            ],
-          };
-        }
-        const { generateSummary } = await import("./utils/statistics.js").then((m) => m);
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  basic: {
-                    totalGames: stats.totalGames,
-                    winRate: stats.winRate,
-                    netProfit: stats.netProfit,
-                    roi: stats.roi,
-                  },
-                  streaks: {
-                    current: stats.currentStreak,
-                    maxWin: stats.maxWinStreak,
-                    maxLoss: stats.maxLossStreak,
-                  },
-                  financial: {
-                    totalWagered: stats.totalWagered,
-                    totalReturned: stats.totalReturned,
-                    netProfit: stats.netProfit,
-                    roi: stats.roi,
-                  },
-                  betAmounts: {
-                    average: stats.averageBet,
-                    min: stats.minBet === Infinity ? 0 : stats.minBet,
-                    max: stats.maxBet,
-                  },
-                  risk:
-                    stats.volatility !== undefined || stats.sharpeRatio !== undefined
-                      ? {
-                          volatility: stats.volatility,
-                          sharpeRatio: stats.sharpeRatio,
-                        }
-                      : undefined,
-                  summary: generateSummary(stats),
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
-      }
-
+      // Cocomo
       case "cocomo_init": {
-        const { baseUnit, maxBet } = args as {
-          baseUnit: number;
-          maxBet?: number;
-        };
+        const { baseUnit, maxBet } = args as { baseUnit: number; maxBet?: number };
         cocomo.initSession(baseUnit, maxBet);
         const state = cocomo.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: "Cocomo session initialized",
-                  baseUnit: state.baseUnit,
-                  currentBet: state.currentBet,
-                  maxBet: state.maxBet,
-                  payoutMultiplier: state.payoutMultiplier,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: "Cocomo session initialized",
+          baseUnit: state.baseUnit,
+          currentBet: state.currentBet,
+          maxBet: state.maxBet,
+          payoutMultiplier: state.payoutMultiplier,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+        });
       }
-
       case "cocomo_record": {
         const { result } = args as { result: "win" | "loss" };
         cocomo.recordResult(result);
         const state = cocomo.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: `Recorded ${result}`,
-                  currentBet: state.currentBet,
-                  previousBet: state.previousBet,
-                  currentStreak: state.currentStreak,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                  reachedLimit: state.reachedLimit,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: `Recorded ${result}`,
+          currentBet: state.currentBet,
+          previousBet: state.previousBet,
+          currentStreak: state.currentStreak,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+          reachedLimit: state.reachedLimit,
+        });
       }
-
       case "cocomo_status": {
         const state = cocomo.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  baseUnit: state.baseUnit,
-                  currentBet: state.currentBet,
-                  previousBet: state.previousBet,
-                  currentStreak: state.currentStreak,
-                  maxBet: state.maxBet,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                  reachedLimit: state.reachedLimit,
-                  payoutMultiplier: state.payoutMultiplier,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          baseUnit: state.baseUnit,
+          currentBet: state.currentBet,
+          previousBet: state.previousBet,
+          currentStreak: state.currentStreak,
+          maxBet: state.maxBet,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+          reachedLimit: state.reachedLimit,
+          payoutMultiplier: state.payoutMultiplier,
+        });
       }
-
       case "cocomo_reset": {
         cocomo.reset();
         const state = cocomo.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: "Session reset to initial state",
-                  baseUnit: state.baseUnit,
-                  currentBet: state.currentBet,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: "Session reset to initial state",
+          baseUnit: state.baseUnit,
+          currentBet: state.currentBet,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+        });
       }
 
+      // Goodman
       case "goodman_init": {
         const { baseUnit } = args as { baseUnit: number };
         goodman.initSession(baseUnit);
         const state = goodman.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: "Goodman session initialized",
-                  baseUnit: state.baseUnit,
-                  sequence: state.sequence,
-                  currentBet: state.currentBet,
-                  currentStep: state.currentStep,
-                  winStreak: state.winStreak,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                  cyclesCompleted: state.cyclesCompleted,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: "Goodman session initialized",
+          baseUnit: state.baseUnit,
+          sequence: state.sequence,
+          currentBet: state.currentBet,
+          currentStep: state.currentStep,
+          winStreak: state.winStreak,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+          cyclesCompleted: state.cyclesCompleted,
+        });
       }
-
       case "goodman_record": {
         const { result } = args as { result: "win" | "loss" };
         goodman.recordResult(result);
         const state = goodman.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: `Recorded ${result}`,
-                  currentBet: state.currentBet,
-                  currentStep: state.currentStep,
-                  winStreak: state.winStreak,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                  cyclesCompleted: state.cyclesCompleted,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: `Recorded ${result}`,
+          currentBet: state.currentBet,
+          currentStep: state.currentStep,
+          winStreak: state.winStreak,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+          cyclesCompleted: state.cyclesCompleted,
+        });
       }
-
       case "goodman_status": {
         const state = goodman.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  baseUnit: state.baseUnit,
-                  sequence: state.sequence,
-                  currentBet: state.currentBet,
-                  currentStep: state.currentStep,
-                  winStreak: state.winStreak,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                  cyclesCompleted: state.cyclesCompleted,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          baseUnit: state.baseUnit,
+          sequence: state.sequence,
+          currentBet: state.currentBet,
+          currentStep: state.currentStep,
+          winStreak: state.winStreak,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+          cyclesCompleted: state.cyclesCompleted,
+        });
       }
-
       case "goodman_reset": {
         goodman.reset();
         const state = goodman.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: "Session reset to initial state",
-                  baseUnit: state.baseUnit,
-                  currentBet: state.currentBet,
-                  currentStep: state.currentStep,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                  cyclesCompleted: state.cyclesCompleted,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: "Session reset to initial state",
+          baseUnit: state.baseUnit,
+          currentBet: state.currentBet,
+          currentStep: state.currentStep,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+          cyclesCompleted: state.cyclesCompleted,
+        });
       }
 
+      // Labouchere
       case "labouchere_init": {
         const { baseUnit, targetProfit, initialSequence, maxSequenceLength } = args as {
           baseUnit: number;
@@ -1266,170 +681,62 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
         labouchere.initSession(baseUnit, targetProfit, initialSequence, maxSequenceLength);
         const state = labouchere.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: "Labouchere session initialized",
-                  baseUnit: state.baseUnit,
-                  targetProfit: state.targetProfit,
-                  sequence: state.sequence,
-                  currentBet: state.currentBet,
-                  maxSequenceLength: state.maxSequenceLength,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: "Labouchere session initialized",
+          baseUnit: state.baseUnit,
+          targetProfit: state.targetProfit,
+          sequence: state.sequence,
+          currentBet: state.currentBet,
+          maxSequenceLength: state.maxSequenceLength,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+        });
       }
-
       case "labouchere_record": {
         const { result } = args as { result: "win" | "loss" };
         labouchere.recordResult(result);
         const state = labouchere.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: `Recorded ${result}`,
-                  sequence: state.sequence,
-                  currentBet: state.currentBet,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                  sessionsCompleted: state.sessionsCompleted,
-                  reachedLimit: state.reachedLimit,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: `Recorded ${result}`,
+          sequence: state.sequence,
+          currentBet: state.currentBet,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+          sessionsCompleted: state.sessionsCompleted,
+          reachedLimit: state.reachedLimit,
+        });
       }
-
       case "labouchere_status": {
         const state = labouchere.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  baseUnit: state.baseUnit,
-                  targetProfit: state.targetProfit,
-                  sequence: state.sequence,
-                  currentBet: state.currentBet,
-                  maxSequenceLength: state.maxSequenceLength,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                  sessionsCompleted: state.sessionsCompleted,
-                  reachedLimit: state.reachedLimit,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          baseUnit: state.baseUnit,
+          targetProfit: state.targetProfit,
+          sequence: state.sequence,
+          currentBet: state.currentBet,
+          maxSequenceLength: state.maxSequenceLength,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+          sessionsCompleted: state.sessionsCompleted,
+          reachedLimit: state.reachedLimit,
+        });
       }
-
       case "labouchere_reset": {
         labouchere.reset();
         const state = labouchere.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: "Session reset to initial state",
-                  baseUnit: state.baseUnit,
-                  targetProfit: state.targetProfit,
-                  sequence: state.sequence,
-                  currentBet: state.currentBet,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: "Session reset to initial state",
+          baseUnit: state.baseUnit,
+          targetProfit: state.targetProfit,
+          sequence: state.sequence,
+          currentBet: state.currentBet,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+        });
       }
+      case "labouchere_statistics":
+        return handleStatistics(labouchere.getStatistics());
 
-      case "labouchere_statistics": {
-        const stats = labouchere.getStatistics();
-        if (!stats) {
-          return {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(
-                  {
-                    message: "No statistics available. Please initialize a session first.",
-                  },
-                  null,
-                  2,
-                ),
-              },
-            ],
-          };
-        }
-        const { generateSummary } = await import("./utils/statistics.js").then((m) => m);
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  basic: {
-                    totalGames: stats.totalGames,
-                    winRate: stats.winRate,
-                    netProfit: stats.netProfit,
-                    roi: stats.roi,
-                  },
-                  streaks: {
-                    current: stats.currentStreak,
-                    maxWin: stats.maxWinStreak,
-                    maxLoss: stats.maxLossStreak,
-                  },
-                  financial: {
-                    totalWagered: stats.totalWagered,
-                    totalReturned: stats.totalReturned,
-                    netProfit: stats.netProfit,
-                    roi: stats.roi,
-                  },
-                  betAmounts: {
-                    average: stats.averageBet,
-                    min: stats.minBet === Infinity ? 0 : stats.minBet,
-                    max: stats.maxBet,
-                  },
-                  risk:
-                    stats.volatility !== undefined || stats.sharpeRatio !== undefined
-                      ? {
-                          volatility: stats.volatility,
-                          sharpeRatio: stats.sharpeRatio,
-                        }
-                      : undefined,
-                  summary: generateSummary(stats),
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
-      }
-
+      // Oscar's Grind
       case "oscarsgrind_init": {
         const { baseUnit, targetProfitUnits, maxBetUnits } = args as {
           baseUnit: number;
@@ -1438,373 +745,170 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
         oscarsGrind.initSession(baseUnit, targetProfitUnits, maxBetUnits);
         const state = oscarsGrind.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: "Oscar's Grind session initialized",
-                  baseUnit: state.baseUnit,
-                  currentBet: state.currentBet,
-                  currentBetUnits: state.currentBetUnits,
-                  maxBetUnits: state.maxBetUnits,
-                  targetProfitUnits: state.targetProfitUnits,
-                  currentProfitUnits: state.currentProfitUnits,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                  sessionsCompleted: state.sessionsCompleted,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: "Oscar's Grind session initialized",
+          baseUnit: state.baseUnit,
+          currentBet: state.currentBet,
+          currentBetUnits: state.currentBetUnits,
+          maxBetUnits: state.maxBetUnits,
+          targetProfitUnits: state.targetProfitUnits,
+          currentProfitUnits: state.currentProfitUnits,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+          sessionsCompleted: state.sessionsCompleted,
+        });
       }
-
       case "oscarsgrind_record": {
         const { result } = args as { result: "win" | "loss" };
         oscarsGrind.recordResult(result);
         const state = oscarsGrind.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: `Recorded ${result}`,
-                  currentBet: state.currentBet,
-                  currentBetUnits: state.currentBetUnits,
-                  currentProfitUnits: state.currentProfitUnits,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                  sessionsCompleted: state.sessionsCompleted,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: `Recorded ${result}`,
+          currentBet: state.currentBet,
+          currentBetUnits: state.currentBetUnits,
+          currentProfitUnits: state.currentProfitUnits,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+          sessionsCompleted: state.sessionsCompleted,
+        });
       }
-
       case "oscarsgrind_status": {
         const state = oscarsGrind.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  baseUnit: state.baseUnit,
-                  currentBet: state.currentBet,
-                  currentBetUnits: state.currentBetUnits,
-                  maxBetUnits: state.maxBetUnits,
-                  targetProfitUnits: state.targetProfitUnits,
-                  currentProfitUnits: state.currentProfitUnits,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                  sessionsCompleted: state.sessionsCompleted,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          baseUnit: state.baseUnit,
+          currentBet: state.currentBet,
+          currentBetUnits: state.currentBetUnits,
+          maxBetUnits: state.maxBetUnits,
+          targetProfitUnits: state.targetProfitUnits,
+          currentProfitUnits: state.currentProfitUnits,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+          sessionsCompleted: state.sessionsCompleted,
+        });
       }
-
       case "oscarsgrind_reset": {
         oscarsGrind.reset();
         const state = oscarsGrind.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: "Session reset to initial state",
-                  baseUnit: state.baseUnit,
-                  currentBet: state.currentBet,
-                  currentBetUnits: state.currentBetUnits,
-                  targetProfitUnits: state.targetProfitUnits,
-                  currentProfitUnits: state.currentProfitUnits,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                  sessionsCompleted: state.sessionsCompleted,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: "Session reset to initial state",
+          baseUnit: state.baseUnit,
+          currentBet: state.currentBet,
+          currentBetUnits: state.currentBetUnits,
+          targetProfitUnits: state.targetProfitUnits,
+          currentProfitUnits: state.currentProfitUnits,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+          sessionsCompleted: state.sessionsCompleted,
+        });
       }
+      case "oscarsgrind_statistics":
+        return handleStatistics(oscarsGrind.getStatistics());
 
-      case "oscarsgrind_statistics": {
-        const stats = oscarsGrind.getStatistics();
-        if (!stats) {
-          return {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(
-                  {
-                    message: "No statistics available. Please initialize a session first.",
-                  },
-                  null,
-                  2,
-                ),
-              },
-            ],
-          };
-        }
-        const { generateSummary } = await import("./utils/statistics.js").then((m) => m);
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  basic: {
-                    totalGames: stats.totalGames,
-                    winRate: stats.winRate,
-                    netProfit: stats.netProfit,
-                    roi: stats.roi,
-                  },
-                  streaks: {
-                    current: stats.currentStreak,
-                    maxWin: stats.maxWinStreak,
-                    maxLoss: stats.maxLossStreak,
-                  },
-                  financial: {
-                    totalWagered: stats.totalWagered,
-                    totalReturned: stats.totalReturned,
-                    netProfit: stats.netProfit,
-                    roi: stats.roi,
-                  },
-                  betAmounts: {
-                    average: stats.averageBet,
-                    min: stats.minBet === Infinity ? 0 : stats.minBet,
-                    max: stats.maxBet,
-                  },
-                  risk:
-                    stats.volatility !== undefined || stats.sharpeRatio !== undefined
-                      ? {
-                          volatility: stats.volatility,
-                          sharpeRatio: stats.sharpeRatio,
-                        }
-                      : undefined,
-                  summary: generateSummary(stats),
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
-      }
-
+      // D'Alembert
       case "dalembert_init": {
-        const { baseUnit, maxBet } = args as {
-          baseUnit: number;
-          maxBet?: number;
-        };
+        const { baseUnit, maxBet } = args as { baseUnit: number; maxBet?: number };
         dalembert.initSession(baseUnit, maxBet);
         const state = dalembert.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: "D'Alembert session initialized",
-                  baseUnit: state.baseUnit,
-                  currentBet: state.currentBet,
-                  maxBet: state.maxBet,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: "D'Alembert session initialized",
+          baseUnit: state.baseUnit,
+          currentBet: state.currentBet,
+          maxBet: state.maxBet,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+        });
       }
-
       case "dalembert_record": {
         const { result } = args as { result: "win" | "loss" };
         dalembert.recordResult(result);
         const state = dalembert.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: `Recorded ${result}`,
-                  currentBet: state.currentBet,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                  reachedLimit: state.reachedLimit,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: `Recorded ${result}`,
+          currentBet: state.currentBet,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+          reachedLimit: state.reachedLimit,
+        });
       }
-
       case "dalembert_status": {
         const state = dalembert.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  baseUnit: state.baseUnit,
-                  currentBet: state.currentBet,
-                  maxBet: state.maxBet,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                  reachedLimit: state.reachedLimit,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          baseUnit: state.baseUnit,
+          currentBet: state.currentBet,
+          maxBet: state.maxBet,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+          reachedLimit: state.reachedLimit,
+        });
       }
-
       case "dalembert_reset": {
         dalembert.reset();
         const state = dalembert.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: "Session reset to initial state",
-                  baseUnit: state.baseUnit,
-                  currentBet: state.currentBet,
-                  maxBet: state.maxBet,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: "Session reset to initial state",
+          baseUnit: state.baseUnit,
+          currentBet: state.currentBet,
+          maxBet: state.maxBet,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+        });
       }
 
+      // Fibonacci
       case "fibonacci_init": {
         const { baseUnit, maxIndex } = args as { baseUnit: number; maxIndex?: number };
         fibonacci.initSession(baseUnit, maxIndex);
         const state = fibonacci.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: "Fibonacci session initialized",
-                  baseUnit: state.baseUnit,
-                  currentIndex: state.currentIndex,
-                  currentBet: state.currentBet,
-                  maxIndex: state.maxIndex,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: "Fibonacci session initialized",
+          baseUnit: state.baseUnit,
+          currentIndex: state.currentIndex,
+          currentBet: state.currentBet,
+          maxIndex: state.maxIndex,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+        });
       }
-
       case "fibonacci_record": {
         const { result } = args as { result: "win" | "loss" };
         fibonacci.recordResult(result);
         const state = fibonacci.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: `Recorded ${result}`,
-                  currentIndex: state.currentIndex,
-                  currentBet: state.currentBet,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                  reachedLimit: state.reachedLimit,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: `Recorded ${result}`,
+          currentIndex: state.currentIndex,
+          currentBet: state.currentBet,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+          reachedLimit: state.reachedLimit,
+        });
       }
-
       case "fibonacci_status": {
         const state = fibonacci.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  baseUnit: state.baseUnit,
-                  currentIndex: state.currentIndex,
-                  currentBet: state.currentBet,
-                  maxIndex: state.maxIndex,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                  reachedLimit: state.reachedLimit,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          baseUnit: state.baseUnit,
+          currentIndex: state.currentIndex,
+          currentBet: state.currentBet,
+          maxIndex: state.maxIndex,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+          reachedLimit: state.reachedLimit,
+        });
       }
-
       case "fibonacci_reset": {
         fibonacci.reset();
         const state = fibonacci.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: "Session reset to initial state",
-                  baseUnit: state.baseUnit,
-                  currentIndex: state.currentIndex,
-                  currentBet: state.currentBet,
-                  maxIndex: state.maxIndex,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: "Session reset to initial state",
+          baseUnit: state.baseUnit,
+          currentIndex: state.currentIndex,
+          currentBet: state.currentBet,
+          maxIndex: state.maxIndex,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+        });
       }
 
+      // Paroli
       case "paroli_init": {
         const { baseUnit, targetWinStreak } = args as {
           baseUnit: number;
@@ -1812,102 +916,56 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
         paroli.initSession(baseUnit, targetWinStreak);
         const state = paroli.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: "Paroli session initialized",
-                  baseUnit: state.baseUnit,
-                  currentBet: state.currentBet,
-                  targetWinStreak: state.targetWinStreak,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: "Paroli session initialized",
+          baseUnit: state.baseUnit,
+          currentBet: state.currentBet,
+          targetWinStreak: state.targetWinStreak,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+        });
       }
-
       case "paroli_record": {
         const { result } = args as { result: "win" | "loss" };
         paroli.recordResult(result);
         const state = paroli.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: `Recorded ${result}`,
-                  currentBet: state.currentBet,
-                  winStreak: state.winStreak,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                  cyclesCompleted: state.cyclesCompleted,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: `Recorded ${result}`,
+          currentBet: state.currentBet,
+          winStreak: state.winStreak,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+          cyclesCompleted: state.cyclesCompleted,
+        });
       }
-
       case "paroli_status": {
         const state = paroli.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  baseUnit: state.baseUnit,
-                  currentBet: state.currentBet,
-                  winStreak: state.winStreak,
-                  targetWinStreak: state.targetWinStreak,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                  cyclesCompleted: state.cyclesCompleted,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          baseUnit: state.baseUnit,
+          currentBet: state.currentBet,
+          winStreak: state.winStreak,
+          targetWinStreak: state.targetWinStreak,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+          cyclesCompleted: state.cyclesCompleted,
+        });
       }
-
       case "paroli_reset": {
         paroli.reset();
         const state = paroli.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: "Session reset to initial state",
-                  baseUnit: state.baseUnit,
-                  currentBet: state.currentBet,
-                  targetWinStreak: state.targetWinStreak,
-                  winStreak: state.winStreak,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                  cyclesCompleted: state.cyclesCompleted,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: "Session reset to initial state",
+          baseUnit: state.baseUnit,
+          currentBet: state.currentBet,
+          targetWinStreak: state.targetWinStreak,
+          winStreak: state.winStreak,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+          cyclesCompleted: state.cyclesCompleted,
+        });
       }
 
+      // Percentage
       case "percentage_init": {
         const { initialBankroll, betPercentage, minBet } = args as {
           initialBankroll: number;
@@ -1916,109 +974,63 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
         percentage.initSession(initialBankroll, betPercentage, minBet);
         const state = percentage.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: "Percentage betting session initialized",
-                  initialBankroll: state.initialBankroll,
-                  currentBankroll: state.currentBankroll,
-                  betPercentage: state.betPercentage,
-                  minBet: state.minBet,
-                  currentBet: state.currentBet,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: "Percentage betting session initialized",
+          initialBankroll: state.initialBankroll,
+          currentBankroll: state.currentBankroll,
+          betPercentage: state.betPercentage,
+          minBet: state.minBet,
+          currentBet: state.currentBet,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+        });
       }
-
       case "percentage_record": {
         const { result } = args as { result: "win" | "loss" };
         percentage.recordResult(result);
         const state = percentage.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: `Recorded ${result}`,
-                  currentBankroll: state.currentBankroll,
-                  currentBet: state.currentBet,
-                  totalProfit: state.totalProfit,
-                  profitPercentage: state.profitPercentage,
-                  totalWins: state.totalWins,
-                  totalLosses: state.totalLosses,
-                  sessionActive: state.sessionActive,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: `Recorded ${result}`,
+          currentBankroll: state.currentBankroll,
+          currentBet: state.currentBet,
+          totalProfit: state.totalProfit,
+          profitPercentage: state.profitPercentage,
+          totalWins: state.totalWins,
+          totalLosses: state.totalLosses,
+          sessionActive: state.sessionActive,
+        });
       }
-
       case "percentage_status": {
         const state = percentage.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  initialBankroll: state.initialBankroll,
-                  currentBankroll: state.currentBankroll,
-                  betPercentage: state.betPercentage,
-                  minBet: state.minBet,
-                  currentBet: state.currentBet,
-                  totalWins: state.totalWins,
-                  totalLosses: state.totalLosses,
-                  totalProfit: state.totalProfit,
-                  profitPercentage: state.profitPercentage,
-                  sessionActive: state.sessionActive,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          initialBankroll: state.initialBankroll,
+          currentBankroll: state.currentBankroll,
+          betPercentage: state.betPercentage,
+          minBet: state.minBet,
+          currentBet: state.currentBet,
+          totalWins: state.totalWins,
+          totalLosses: state.totalLosses,
+          totalProfit: state.totalProfit,
+          profitPercentage: state.profitPercentage,
+          sessionActive: state.sessionActive,
+        });
       }
-
       case "percentage_reset": {
         percentage.reset();
         const state = percentage.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: "Session reset to initial state",
-                  initialBankroll: state.initialBankroll,
-                  currentBankroll: state.currentBankroll,
-                  betPercentage: state.betPercentage,
-                  minBet: state.minBet,
-                  currentBet: state.currentBet,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: "Session reset to initial state",
+          initialBankroll: state.initialBankroll,
+          currentBankroll: state.currentBankroll,
+          betPercentage: state.betPercentage,
+          minBet: state.minBet,
+          currentBet: state.currentBet,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+        });
       }
 
+      // Kelly Criterion
       case "kelly_init": {
         const {
           initialBankroll,
@@ -2044,33 +1056,21 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           maxBet,
         );
         const state = kelly.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: "Kelly Criterion session initialized",
-                  initialBankroll: state.initialBankroll,
-                  currentBankroll: state.currentBankroll,
-                  winProbability: state.winProbability,
-                  payoutOdds: state.payoutOdds,
-                  kellyPercentage: state.kellyPercentage,
-                  fractionalKelly: state.fractionalKelly,
-                  recommendedBet: state.currentBet,
-                  minBet: state.minBet,
-                  maxBet: state.maxBet,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: "Kelly Criterion session initialized",
+          initialBankroll: state.initialBankroll,
+          currentBankroll: state.currentBankroll,
+          winProbability: state.winProbability,
+          payoutOdds: state.payoutOdds,
+          kellyPercentage: state.kellyPercentage,
+          fractionalKelly: state.fractionalKelly,
+          recommendedBet: state.currentBet,
+          minBet: state.minBet,
+          maxBet: state.maxBet,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+        });
       }
-
       case "kelly_record": {
         const { result, actualPayout } = args as {
           result: "win" | "loss";
@@ -2078,108 +1078,64 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
         kelly.recordResult(result, actualPayout);
         const state = kelly.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: `Recorded ${result}`,
-                  currentBankroll: state.currentBankroll,
-                  recommendedBet: state.currentBet,
-                  totalProfit: state.totalProfit,
-                  kellyPercentage: state.kellyPercentage,
-                  actualWinRate: state.actualWinRate,
-                  totalWins: state.totalWins,
-                  totalLosses: state.totalLosses,
-                  sessionActive: state.sessionActive,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: `Recorded ${result}`,
+          currentBankroll: state.currentBankroll,
+          recommendedBet: state.currentBet,
+          totalProfit: state.totalProfit,
+          kellyPercentage: state.kellyPercentage,
+          actualWinRate: state.actualWinRate,
+          totalWins: state.totalWins,
+          totalLosses: state.totalLosses,
+          sessionActive: state.sessionActive,
+        });
       }
-
       case "kelly_status": {
         const state = kelly.getState();
         const bankrollChange =
           ((state.currentBankroll - state.initialBankroll) / state.initialBankroll) * 100;
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  initialBankroll: state.initialBankroll,
-                  currentBankroll: state.currentBankroll,
-                  bankrollChange: `${bankrollChange >= 0 ? "+" : ""}${bankrollChange.toFixed(2)}%`,
-                  winProbability: state.winProbability,
-                  payoutOdds: state.payoutOdds,
-                  kellyPercentage: state.kellyPercentage,
-                  fractionalKelly: state.fractionalKelly,
-                  recommendedBet: state.currentBet,
-                  minBet: state.minBet,
-                  maxBet: state.maxBet,
-                  totalWins: state.totalWins,
-                  totalLosses: state.totalLosses,
-                  actualWinRate: state.actualWinRate,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          initialBankroll: state.initialBankroll,
+          currentBankroll: state.currentBankroll,
+          bankrollChange: `${bankrollChange >= 0 ? "+" : ""}${bankrollChange.toFixed(2)}%`,
+          winProbability: state.winProbability,
+          payoutOdds: state.payoutOdds,
+          kellyPercentage: state.kellyPercentage,
+          fractionalKelly: state.fractionalKelly,
+          recommendedBet: state.currentBet,
+          minBet: state.minBet,
+          maxBet: state.maxBet,
+          totalWins: state.totalWins,
+          totalLosses: state.totalLosses,
+          actualWinRate: state.actualWinRate,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+        });
       }
-
       case "kelly_reset": {
         kelly.reset();
         const state = kelly.getState();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  message: "Session reset to initial state",
-                  initialBankroll: state.initialBankroll,
-                  currentBankroll: state.currentBankroll,
-                  winProbability: state.winProbability,
-                  payoutOdds: state.payoutOdds,
-                  kellyPercentage: state.kellyPercentage,
-                  fractionalKelly: state.fractionalKelly,
-                  recommendedBet: state.currentBet,
-                  minBet: state.minBet,
-                  maxBet: state.maxBet,
-                  totalProfit: state.totalProfit,
-                  sessionActive: state.sessionActive,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createToolResponse({
+          message: "Session reset to initial state",
+          initialBankroll: state.initialBankroll,
+          currentBankroll: state.currentBankroll,
+          winProbability: state.winProbability,
+          payoutOdds: state.payoutOdds,
+          kellyPercentage: state.kellyPercentage,
+          fractionalKelly: state.fractionalKelly,
+          recommendedBet: state.currentBet,
+          minBet: state.minBet,
+          maxBet: state.maxBet,
+          totalProfit: state.totalProfit,
+          sessionActive: state.sessionActive,
+        });
       }
 
       default:
         throw new Error(`Unknown tool: ${name}`);
     }
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    return {
-      content: [
-        {
-          type: "text",
-          text: JSON.stringify({ error: errorMessage }, null, 2),
-        },
-      ],
-      isError: true,
-    };
+    return createErrorResponse(error);
   }
 });
 

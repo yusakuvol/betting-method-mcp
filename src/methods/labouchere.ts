@@ -1,8 +1,8 @@
 import type { BetResult, LabouchereState, SessionStatistics } from "../types.js";
 import {
+  calculateRiskMetrics,
   initializeStatistics,
   updateStatistics,
-  calculateRiskMetrics,
 } from "../utils/statistics.js";
 
 /**

@@ -118,6 +118,9 @@ Each betting method provides 4 MCP tools:
 - `{method}_status` - Check current state (bet amount, profit/loss, etc.)
 - `{method}_reset` - Reset the session to initial state
 
+Some methods also provide:
+- `{method}_statistics` - Get detailed session statistics (win rate, ROI, streaks, risk metrics)
+
 ### Method Names
 - `montecarlo` - Monte Carlo Method
 - `martingale` - Martingale Method
@@ -245,7 +248,7 @@ npm run dev
 
 ### Testing
 
-This project uses Vitest for testing with 276+ tests across 11 test files.
+This project uses Vitest for testing with 380+ tests across 15 test files.
 
 ```bash
 # Run all tests
@@ -315,8 +318,15 @@ betting-method-mcp/
 ├── src/
 │   ├── index.ts                    # MCP server entry point
 │   ├── types.ts                    # Common type definitions
+│   ├── helpers/                    # MCP response & tool definition helpers
+│   │   ├── __tests__/              # Helper test files
+│   │   ├── mcp-response.ts         # Response formatting utilities
+│   │   ├── statistics-handler.ts   # Statistics response builder
+│   │   └── tool-definitions.ts     # Tool schema factory functions
+│   ├── utils/
+│   │   └── statistics.ts           # Statistics calculation utilities
 │   └── methods/
-│       ├── __tests__/              # Vitest test files (11 files)
+│       ├── __tests__/              # Method test files (11 files)
 │       ├── montecarlo.ts
 │       ├── martingale.ts
 │       ├── labouchere.ts
