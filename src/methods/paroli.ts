@@ -1,4 +1,9 @@
-import type { BetResult, ParoliState } from "../types.js";
+import type { BetResult, ParoliState, SessionStatistics } from "../types.js";
+import {
+  calculateRiskMetrics,
+  initializeStatistics,
+  updateStatistics,
+} from "../utils/statistics.js";
 
 /**
  * Paroli betting method calculator (Reverse Martingale)
@@ -45,6 +50,7 @@ export class ParoliMethod {
       totalProfit: 0,
       sessionActive: true,
       cyclesCompleted: 0,
+      statistics: initializeStatistics(),
     };
   }
 
@@ -57,6 +63,18 @@ export class ParoliMethod {
     }
 
     const currentBetAmount = this.state.currentBet;
+
+    // Update statistics
+    if (!this.state.statistics) {
+      this.state.statistics = initializeStatistics();
+    }
+    const payout = result === "win" ? currentBetAmount * 2 : 0;
+    this.state.statistics = updateStatistics(
+      this.state.statistics,
+      currentBetAmount,
+      result,
+      payout,
+    );
 
     if (result === "win") {
       // Update profit
@@ -83,6 +101,9 @@ export class ParoliMethod {
       this.state.currentBet = this.state.baseUnit;
       this.state.winStreak = 0;
     }
+
+    // Update risk metrics
+    this.state.statistics = calculateRiskMetrics(this.state.statistics);
   }
 
   /**
@@ -90,6 +111,27 @@ export class ParoliMethod {
    */
   getState(): ParoliState {
     return { ...this.state };
+  }
+
+  /**
+   * Get statistics for the current session
+   */
+  getStatistics(): SessionStatistics | undefined {
+    if (!this.state.statistics) {
+      return undefined;
+    }
+    return {
+      ...this.state.statistics,
+      betHistory: this.state.statistics.betHistory
+        ? [...this.state.statistics.betHistory]
+        : undefined,
+      outcomeHistory: this.state.statistics.outcomeHistory
+        ? [...this.state.statistics.outcomeHistory]
+        : undefined,
+      bankrollHistory: this.state.statistics.bankrollHistory
+        ? [...this.state.statistics.bankrollHistory]
+        : undefined,
+    };
   }
 
   /**

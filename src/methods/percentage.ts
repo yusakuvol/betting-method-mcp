@@ -1,4 +1,9 @@
-import type { BetResult, PercentageState } from "../types.js";
+import type { BetResult, PercentageState, SessionStatistics } from "../types.js";
+import {
+  calculateRiskMetrics,
+  initializeStatistics,
+  updateStatistics,
+} from "../utils/statistics.js";
 
 /**
  * Percentage (Fixed Percentage Betting) method calculator
@@ -68,6 +73,7 @@ export class PercentageMethod {
       totalProfit: 0,
       sessionActive: true,
       profitPercentage: 0,
+      statistics: initializeStatistics(),
     };
   }
 
@@ -80,6 +86,18 @@ export class PercentageMethod {
     }
 
     const currentBetAmount = this.state.currentBet;
+
+    // Update statistics
+    if (!this.state.statistics) {
+      this.state.statistics = initializeStatistics();
+    }
+    const payout = result === "win" ? currentBetAmount * 2 : 0;
+    this.state.statistics = updateStatistics(
+      this.state.statistics,
+      currentBetAmount,
+      result,
+      payout,
+    );
 
     if (result === "win") {
       // Update bankroll and profit
@@ -110,6 +128,9 @@ export class PercentageMethod {
       this.state.minBet,
       Math.floor(this.state.currentBankroll * this.state.betPercentage),
     );
+
+    // Update risk metrics
+    this.state.statistics = calculateRiskMetrics(this.state.statistics);
   }
 
   /**
@@ -117,6 +138,27 @@ export class PercentageMethod {
    */
   getState(): PercentageState {
     return { ...this.state };
+  }
+
+  /**
+   * Get statistics for the current session
+   */
+  getStatistics(): SessionStatistics | undefined {
+    if (!this.state.statistics) {
+      return undefined;
+    }
+    return {
+      ...this.state.statistics,
+      betHistory: this.state.statistics.betHistory
+        ? [...this.state.statistics.betHistory]
+        : undefined,
+      outcomeHistory: this.state.statistics.outcomeHistory
+        ? [...this.state.statistics.outcomeHistory]
+        : undefined,
+      bankrollHistory: this.state.statistics.bankrollHistory
+        ? [...this.state.statistics.bankrollHistory]
+        : undefined,
+    };
   }
 
   /**

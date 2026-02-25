@@ -142,6 +142,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         "Get the current Cocomo session status including current bet, streak, and total profit",
       ),
       createResetTool("cocomo", "Cocomo"),
+      createStatisticsTool("cocomo", "Cocomo"),
 
       // Goodman
       {
@@ -165,6 +166,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         "Get the current Goodman session status including current bet, step, win streak, and total profit",
       ),
       createResetTool("goodman", "Goodman"),
+      createStatisticsTool("goodman", "Goodman"),
 
       // Labouchere
       {
@@ -272,6 +274,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         "Get the current D'Alembert session status including current bet and total profit",
       ),
       createResetTool("dalembert", "D'Alembert"),
+      createStatisticsTool("dalembert", "D'Alembert"),
 
       // Fibonacci
       {
@@ -301,6 +304,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         "Get the current Fibonacci session status including sequence position, current bet, and total profit",
       ),
       createResetTool("fibonacci", "Fibonacci"),
+      createStatisticsTool("fibonacci", "Fibonacci"),
 
       // Paroli
       {
@@ -330,6 +334,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         "Get the current Paroli session status including current bet, win streak, and total profit",
       ),
       createResetTool("paroli", "Paroli"),
+      createStatisticsTool("paroli", "Paroli"),
 
       // Percentage
       {
@@ -365,6 +370,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         "Get the current Percentage betting session status including bankroll, current bet, and profit percentage",
       ),
       createResetTool("percentage", "Percentage betting"),
+      createStatisticsTool("percentage", "Percentage betting"),
 
       // Kelly Criterion
       {
@@ -435,6 +441,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         "Get the current Kelly Criterion session status including bankroll, recommended bet, and statistics",
       ),
       createResetTool("kelly", "Kelly Criterion"),
+      createStatisticsTool("kelly", "Kelly Criterion"),
     ],
   };
 });
@@ -613,6 +620,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         });
       }
 
+      case "cocomo_statistics":
+        return handleStatistics(cocomo.getStatistics());
+
       // Goodman
       case "goodman_init": {
         const { baseUnit } = args as { baseUnit: number };
@@ -670,6 +680,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           cyclesCompleted: state.cyclesCompleted,
         });
       }
+
+      case "goodman_statistics":
+        return handleStatistics(goodman.getStatistics());
 
       // Labouchere
       case "labouchere_init": {
@@ -854,6 +867,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         });
       }
 
+      case "dalembert_statistics":
+        return handleStatistics(dalembert.getStatistics());
+
       // Fibonacci
       case "fibonacci_init": {
         const { baseUnit, maxIndex } = args as { baseUnit: number; maxIndex?: number };
@@ -907,6 +923,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           sessionActive: state.sessionActive,
         });
       }
+
+      case "fibonacci_statistics":
+        return handleStatistics(fibonacci.getStatistics());
 
       // Paroli
       case "paroli_init": {
@@ -964,6 +983,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           cyclesCompleted: state.cyclesCompleted,
         });
       }
+
+      case "paroli_statistics":
+        return handleStatistics(paroli.getStatistics());
 
       // Percentage
       case "percentage_init": {
@@ -1029,6 +1051,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           sessionActive: state.sessionActive,
         });
       }
+
+      case "percentage_statistics":
+        return handleStatistics(percentage.getStatistics());
 
       // Kelly Criterion
       case "kelly_init": {
@@ -1130,6 +1155,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           sessionActive: state.sessionActive,
         });
       }
+
+      case "kelly_statistics":
+        return handleStatistics(kelly.getStatistics());
 
       default:
         throw new Error(`Unknown tool: ${name}`);

@@ -1,4 +1,9 @@
-import type { BetResult, GoodmanState } from "../types.js";
+import type { BetResult, GoodmanState, SessionStatistics } from "../types.js";
+import {
+  calculateRiskMetrics,
+  initializeStatistics,
+  updateStatistics,
+} from "../utils/statistics.js";
 
 /**
  * Goodman betting method calculator (1-2-3-5 method)
@@ -42,6 +47,7 @@ export class GoodmanMethod {
       totalProfit: 0,
       sessionActive: true,
       cyclesCompleted: 0,
+      statistics: initializeStatistics(),
     };
   }
 
@@ -54,6 +60,18 @@ export class GoodmanMethod {
     }
 
     const currentBetAmount = this.state.currentBet;
+
+    // Update statistics
+    if (!this.state.statistics) {
+      this.state.statistics = initializeStatistics();
+    }
+    const payout = result === "win" ? currentBetAmount * 2 : 0;
+    this.state.statistics = updateStatistics(
+      this.state.statistics,
+      currentBetAmount,
+      result,
+      payout,
+    );
 
     if (result === "win") {
       // Update profit
@@ -85,6 +103,9 @@ export class GoodmanMethod {
       this.state.winStreak = 0;
       this.state.currentBet = this.state.sequence[0] * this.state.baseUnit;
     }
+
+    // Update risk metrics
+    this.state.statistics = calculateRiskMetrics(this.state.statistics);
   }
 
   /**
@@ -94,6 +115,27 @@ export class GoodmanMethod {
     return {
       ...this.state,
       sequence: [...this.state.sequence], // Deep copy of array
+    };
+  }
+
+  /**
+   * Get statistics for the current session
+   */
+  getStatistics(): SessionStatistics | undefined {
+    if (!this.state.statistics) {
+      return undefined;
+    }
+    return {
+      ...this.state.statistics,
+      betHistory: this.state.statistics.betHistory
+        ? [...this.state.statistics.betHistory]
+        : undefined,
+      outcomeHistory: this.state.statistics.outcomeHistory
+        ? [...this.state.statistics.outcomeHistory]
+        : undefined,
+      bankrollHistory: this.state.statistics.bankrollHistory
+        ? [...this.state.statistics.bankrollHistory]
+        : undefined,
     };
   }
 

@@ -1,4 +1,9 @@
-import type { BetResult, CocomoState } from "../types.js";
+import type { BetResult, CocomoState, SessionStatistics } from "../types.js";
+import {
+  calculateRiskMetrics,
+  initializeStatistics,
+  updateStatistics,
+} from "../utils/statistics.js";
 
 /**
  * Cocomo betting method calculator
@@ -46,6 +51,7 @@ export class CocomoMethod {
       sessionActive: true,
       reachedLimit: false,
       payoutMultiplier: 3,
+      statistics: initializeStatistics(),
     };
 
     // Validate maxBet
@@ -63,6 +69,18 @@ export class CocomoMethod {
     }
 
     const currentBetAmount = this.state.currentBet;
+
+    // Update statistics
+    if (!this.state.statistics) {
+      this.state.statistics = initializeStatistics();
+    }
+    const payout = result === "win" ? currentBetAmount * 3 : 0;
+    this.state.statistics = updateStatistics(
+      this.state.statistics,
+      currentBetAmount,
+      result,
+      payout,
+    );
 
     if (result === "win") {
       // Win: 3x payout, minus the bet amount itself = 2x net profit
@@ -101,6 +119,9 @@ export class CocomoMethod {
       this.state.previousBet = currentBetAmount;
       this.state.currentBet = nextBet;
     }
+
+    // Update risk metrics
+    this.state.statistics = calculateRiskMetrics(this.state.statistics);
   }
 
   /**
@@ -108,6 +129,27 @@ export class CocomoMethod {
    */
   getState(): CocomoState {
     return { ...this.state };
+  }
+
+  /**
+   * Get statistics for the current session
+   */
+  getStatistics(): SessionStatistics | undefined {
+    if (!this.state.statistics) {
+      return undefined;
+    }
+    return {
+      ...this.state.statistics,
+      betHistory: this.state.statistics.betHistory
+        ? [...this.state.statistics.betHistory]
+        : undefined,
+      outcomeHistory: this.state.statistics.outcomeHistory
+        ? [...this.state.statistics.outcomeHistory]
+        : undefined,
+      bankrollHistory: this.state.statistics.bankrollHistory
+        ? [...this.state.statistics.bankrollHistory]
+        : undefined,
+    };
   }
 
   /**

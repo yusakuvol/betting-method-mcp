@@ -1,4 +1,9 @@
-import type { BetResult, FibonacciState } from "../types.js";
+import type { BetResult, FibonacciState, SessionStatistics } from "../types.js";
+import {
+  calculateRiskMetrics,
+  initializeStatistics,
+  updateStatistics,
+} from "../utils/statistics.js";
 
 /**
  * Fibonacci betting method calculator
@@ -67,6 +72,7 @@ export class FibonacciMethod {
       totalProfit: 0,
       sessionActive: true,
       reachedLimit: false,
+      statistics: initializeStatistics(),
     };
   }
 
@@ -79,6 +85,18 @@ export class FibonacciMethod {
     }
 
     const currentBetAmount = this.state.currentBet;
+
+    // Update statistics
+    if (!this.state.statistics) {
+      this.state.statistics = initializeStatistics();
+    }
+    const payout = result === "win" ? currentBetAmount * 2 : 0;
+    this.state.statistics = updateStatistics(
+      this.state.statistics,
+      currentBetAmount,
+      result,
+      payout,
+    );
 
     if (result === "win") {
       // Update profit
@@ -115,6 +133,9 @@ export class FibonacciMethod {
       this.state.currentIndex = newIndex;
       this.state.currentBet = this.state.sequence[newIndex] * this.state.baseUnit;
     }
+
+    // Update risk metrics
+    this.state.statistics = calculateRiskMetrics(this.state.statistics);
   }
 
   /**
@@ -122,6 +143,27 @@ export class FibonacciMethod {
    */
   getState(): FibonacciState {
     return { ...this.state };
+  }
+
+  /**
+   * Get statistics for the current session
+   */
+  getStatistics(): SessionStatistics | undefined {
+    if (!this.state.statistics) {
+      return undefined;
+    }
+    return {
+      ...this.state.statistics,
+      betHistory: this.state.statistics.betHistory
+        ? [...this.state.statistics.betHistory]
+        : undefined,
+      outcomeHistory: this.state.statistics.outcomeHistory
+        ? [...this.state.statistics.outcomeHistory]
+        : undefined,
+      bankrollHistory: this.state.statistics.bankrollHistory
+        ? [...this.state.statistics.bankrollHistory]
+        : undefined,
+    };
   }
 
   /**
