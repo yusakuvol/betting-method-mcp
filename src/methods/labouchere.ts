@@ -1,4 +1,9 @@
-import type { BetResult, LabouchereState } from "../types.js";
+import type { BetResult, LabouchereState, SessionStatistics } from "../types.js";
+import {
+  initializeStatistics,
+  updateStatistics,
+  calculateRiskMetrics,
+} from "../utils/statistics.js";
 
 /**
  * Labouchere betting method calculator
@@ -88,6 +93,7 @@ export class LabouchereMethod {
       sessionActive: true,
       sessionsCompleted: 0,
       reachedLimit: false,
+      statistics: initializeStatistics(),
     };
   }
 
@@ -137,6 +143,18 @@ export class LabouchereMethod {
     const currentBetAmount = this.state.currentBet;
     const betUnits = currentBetAmount / this.state.baseUnit;
 
+    // Update statistics
+    if (!this.state.statistics) {
+      this.state.statistics = initializeStatistics();
+    }
+    const payout = result === "win" ? currentBetAmount * 2 : 0;
+    this.state.statistics = updateStatistics(
+      this.state.statistics,
+      currentBetAmount,
+      result,
+      payout,
+    );
+
     if (result === "win") {
       // Update profit
       this.state.totalProfit += currentBetAmount;
@@ -170,6 +188,9 @@ export class LabouchereMethod {
     } else {
       this.state.currentBet = 0;
     }
+
+    // Update risk metrics
+    this.state.statistics = calculateRiskMetrics(this.state.statistics);
   }
 
   /**
@@ -180,6 +201,27 @@ export class LabouchereMethod {
       ...this.state,
       sequence: [...this.state.sequence],
       initialSequence: [...this.state.initialSequence],
+    };
+  }
+
+  /**
+   * Get statistics for the current session
+   */
+  getStatistics(): SessionStatistics | undefined {
+    if (!this.state.statistics) {
+      return undefined;
+    }
+    return {
+      ...this.state.statistics,
+      betHistory: this.state.statistics.betHistory
+        ? [...this.state.statistics.betHistory]
+        : undefined,
+      outcomeHistory: this.state.statistics.outcomeHistory
+        ? [...this.state.statistics.outcomeHistory]
+        : undefined,
+      bankrollHistory: this.state.statistics.bankrollHistory
+        ? [...this.state.statistics.bankrollHistory]
+        : undefined,
     };
   }
 

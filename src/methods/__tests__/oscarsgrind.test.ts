@@ -345,4 +345,90 @@ describe("OscarsGrindMethod", () => {
       expect(state.currentProfitUnits).toBe(0);
     });
   });
+
+  describe("statistics", () => {
+    it("should initialize statistics on session start", () => {
+      oscarsGrind.initSession(10);
+      const stats = oscarsGrind.getStatistics();
+      expect(stats).toBeDefined();
+      expect(stats?.totalGames).toBe(0);
+    });
+
+    it("should update statistics on recordResult", () => {
+      oscarsGrind.initSession(10);
+      oscarsGrind.recordResult("win");
+      const stats = oscarsGrind.getStatistics();
+      expect(stats?.totalGames).toBe(1);
+      expect(stats?.totalWins).toBe(1);
+      expect(stats?.totalLosses).toBe(0);
+    });
+
+    it("should return undefined when statistics not initialized", () => {
+      const oscarsGrind2 = new OscarsGrindMethod();
+      const stats = oscarsGrind2.getStatistics();
+      expect(stats).toBeUndefined();
+    });
+
+    it("should track bet history", () => {
+      oscarsGrind.initSession(10);
+      oscarsGrind.recordResult("win");
+      oscarsGrind.recordResult("loss");
+      const stats = oscarsGrind.getStatistics();
+      expect(stats?.betHistory).toHaveLength(2);
+      expect(stats?.outcomeHistory).toHaveLength(2);
+    });
+
+    it("should return deep copy of history arrays", () => {
+      oscarsGrind.initSession(10);
+      oscarsGrind.recordResult("win");
+      const stats1 = oscarsGrind.getStatistics();
+      const stats2 = oscarsGrind.getStatistics();
+
+      expect(stats1?.betHistory).toEqual(stats2?.betHistory);
+      expect(stats1?.betHistory).not.toBe(stats2?.betHistory);
+      expect(stats1?.outcomeHistory).not.toBe(stats2?.outcomeHistory);
+    });
+
+    it("should handle undefined history arrays", () => {
+      oscarsGrind.initSession(10);
+      // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+      (oscarsGrind as any).state.statistics = {
+        // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+        ...(oscarsGrind as any).state.statistics,
+        betHistory: undefined,
+        outcomeHistory: undefined,
+        bankrollHistory: undefined,
+      };
+      const stats = oscarsGrind.getStatistics();
+      expect(stats?.betHistory).toBeUndefined();
+      expect(stats?.outcomeHistory).toBeUndefined();
+      expect(stats?.bankrollHistory).toBeUndefined();
+    });
+
+    it("should handle defined bankrollHistory", () => {
+      oscarsGrind.initSession(10);
+      // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+      (oscarsGrind as any).state.statistics = {
+        // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+        ...(oscarsGrind as any).state.statistics,
+        bankrollHistory: [1000, 1100],
+      };
+      const stats = oscarsGrind.getStatistics();
+      expect(stats?.bankrollHistory).toEqual([1000, 1100]);
+      expect(stats?.bankrollHistory).not.toBe(
+        // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+        (oscarsGrind as any).state.statistics.bankrollHistory,
+      );
+    });
+
+    it("should initialize statistics if missing in recordResult", () => {
+      oscarsGrind.initSession(10);
+      // biome-ignore lint/suspicious/noExplicitAny: Testing private state access
+      (oscarsGrind as any).state.statistics = undefined;
+      oscarsGrind.recordResult("win");
+      const stats = oscarsGrind.getStatistics();
+      expect(stats).toBeDefined();
+      expect(stats?.totalGames).toBe(1);
+    });
+  });
 });

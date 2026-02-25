@@ -1,4 +1,9 @@
-import type { BetResult, MartingaleState } from "../types.js";
+import type { BetResult, MartingaleState, SessionStatistics } from "../types.js";
+import {
+  initializeStatistics,
+  updateStatistics,
+  calculateRiskMetrics,
+} from "../utils/statistics.js";
 
 /**
  * Martingale betting method calculator
@@ -42,6 +47,7 @@ export class MartingaleMethod {
       totalProfit: 0,
       sessionActive: true,
       reachedLimit: false,
+      statistics: initializeStatistics(),
     };
 
     // Validate maxBet
@@ -59,6 +65,18 @@ export class MartingaleMethod {
     }
 
     const currentBetAmount = this.state.currentBet;
+
+    // Update statistics
+    if (!this.state.statistics) {
+      this.state.statistics = initializeStatistics();
+    }
+    const payout = result === "win" ? currentBetAmount * 2 : 0;
+    this.state.statistics = updateStatistics(
+      this.state.statistics,
+      currentBetAmount,
+      result,
+      payout,
+    );
 
     if (result === "win") {
       // Update profit
@@ -95,6 +113,9 @@ export class MartingaleMethod {
 
       this.state.currentBet = nextBet;
     }
+
+    // Update risk metrics
+    this.state.statistics = calculateRiskMetrics(this.state.statistics);
   }
 
   /**
@@ -102,6 +123,27 @@ export class MartingaleMethod {
    */
   getState(): MartingaleState {
     return { ...this.state };
+  }
+
+  /**
+   * Get statistics for the current session
+   */
+  getStatistics(): SessionStatistics | undefined {
+    if (!this.state.statistics) {
+      return undefined;
+    }
+    return {
+      ...this.state.statistics,
+      betHistory: this.state.statistics.betHistory
+        ? [...this.state.statistics.betHistory]
+        : undefined,
+      outcomeHistory: this.state.statistics.outcomeHistory
+        ? [...this.state.statistics.outcomeHistory]
+        : undefined,
+      bankrollHistory: this.state.statistics.bankrollHistory
+        ? [...this.state.statistics.bankrollHistory]
+        : undefined,
+    };
   }
 
   /**
